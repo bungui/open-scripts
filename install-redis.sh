@@ -10,7 +10,7 @@ redis_ver=6.2.6
 download_dir=/down/redis
 
 apt update
-apt install build-essential -y
+apt install build-essential pkg-config curl -y
 
 mkdir -p ${download_dir}
 cd ${download_dir}
@@ -20,4 +20,5 @@ tar xzf redis-${redis_ver}.tar.gz
 cd redis-${redis_ver}
 
 make -j $(nproc)
+make test
 make install
