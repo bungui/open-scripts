@@ -10,6 +10,13 @@ set -x
 redis_ver=6.2.6
 download_dir=/down/redis
 
+if [ -f "/usr/local/bin/redis-server" ]; then
+  read -p "already installed. confirm to re-install[y/N]: " confirm
+  if [[ -z $confirm || "$confirm" == "N" || "$confirm" == "n" ]]; then
+    exit 0
+  fi
+fi
+
 apt update
 apt install build-essential pkg-config tcl -y
 
