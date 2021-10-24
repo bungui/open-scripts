@@ -11,6 +11,7 @@ cd ${download_dir}
 
 wget https://download.redis.io/releases/redis-${redis_ver}.tar.gz -O redis-${redis_ver}.tar.gz
 tar xzf redis-${redis_ver}.tar.gz
+cd redis-${redis_ver}
 
 make -j $(nproc)
 make install
