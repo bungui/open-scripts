@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -x
+
 redis_ver=6.2.6
 download_dir=/down/redis
 
