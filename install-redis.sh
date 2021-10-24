@@ -10,7 +10,7 @@ redis_ver=6.2.6
 download_dir=/down/redis
 
 apt update
-apt install build-essential pkg-config curl -y
+apt install build-essential pkg-config tcl curl -y
 
 mkdir -p ${download_dir}
 cd ${download_dir}
