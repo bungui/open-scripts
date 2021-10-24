@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # execute:
-# curl -H "Cache-Control: no-cache" -Lso- https://raw.githubusercontent.com/bungui/open-scripts/master/install-redis.sh | bash
+# curl -Lso- https://raw.githubusercontent.com/bungui/open-scripts/master/install-redis.sh?t=$(date +%s) | bash
 
 set -e
 set -x
