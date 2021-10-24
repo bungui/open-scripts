@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# execute:
+# curl -H "Cache-Control: no-cache" -Lso- https://raw.githubusercontent.com/bungui/open-scripts/master/install-redis.sh | bash
+
 set -e
 set -x
 
