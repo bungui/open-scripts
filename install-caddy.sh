@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -e
+set -x
+
 # color
 red='\e[91m'
 green='\e[92m'
