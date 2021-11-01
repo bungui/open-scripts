@@ -41,7 +41,7 @@ fi
 if [[ ! ${caddy_arch} ]]; then
   echo -e "$red 获取 Caddy 下载参数失败！$none" && exit 1
 fi
-local caddy_download_link="https://github.com/caddyserver/caddy/releases/download/v1.0.4/caddy_v1.0.4_linux_${caddy_arch}.tar.gz"
+caddy_download_link="https://github.com/caddyserver/caddy/releases/download/v1.0.4/caddy_v1.0.4_linux_${caddy_arch}.tar.gz"
 
 mkdir -p $caddy_tmp
 
