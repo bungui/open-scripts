@@ -67,6 +67,7 @@ sed -i "s/www-data/root/g" /lib/systemd/system/caddy.service
 
 # caddy config
 
+mkdir -p /etc/caddy
 cat >/etc/caddy/Caddyfile <<-EOF
 $domain {
     gzip
