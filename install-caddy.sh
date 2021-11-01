@@ -20,12 +20,12 @@ domain=""
 path=""
 forward_port=""
 
-read -p "input domain(A record is set): " domain
+read -p "input domain(A record points here!!!): " domain
 if [ -z "$domain" ]; then
   echo "domain is empty"
   exit 1
 fi
-read -p "input caddy uri path(like /fake): " path
+read -p "input caddy uri path(like mycontext): " path
 if [ -z "$path" ]; then
   echo "path is empty"
   exit 1
