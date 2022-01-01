@@ -140,7 +140,7 @@ function check_virtualenv() {
 }
 
 function clone_client_repo() {
-  if [ -d /repo/py-aiohttp-client/ ]; then
+  if [ -d /repo/py-aiohttp-client ]; then
     echo "仓库已经克隆"
     cd /repo/py-aiohttp-client
     git pull
@@ -175,7 +175,7 @@ function start_menu() {
   case "$menuNumberInput" in
   1) install_github_cli ;;
   2) gh_login ;;
-  2) clone_client_repo ;;
+  3) clone_client_repo ;;
   v) updateScript ;;
   0) exit 0 ;;
   esac
