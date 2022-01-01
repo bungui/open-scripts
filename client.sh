@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # 参考： https://github.com/Misaka-blog/MisakaLinuxToolbox
+# 当前代码地址： https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh
 # 一些全局变量
 arch=$(uname -m)
 virt=$(systemd-detect-virt)
@@ -104,6 +105,8 @@ function gh_login() {
   if [ $result -eq 1 ]; then
     echo "未登陆github"
     gh auth login
+  else
+    echo "已经登陆"
   fi
 }
 
@@ -116,8 +119,6 @@ function start_menu() {
   red "============================"
   red "                            "
   red "    AIO Toolbox             "
-  echo "                           "
-  red "  https://aio.pator.fun     "
   echo "                           "
   red "============================"
   yellow "检测到VPS信息如下"
