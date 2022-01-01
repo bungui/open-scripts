@@ -138,7 +138,9 @@ function check_virtualenv() {
   if [ ! -d venv ]; then
     virtualenv venv
   fi
+  echo "进入python虚拟环境"
   source venv/bin/activate
+  yellow "安装依赖包"
   pip install --upgrade pip
   pip install -r requirements.txt
 }
