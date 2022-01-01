@@ -78,8 +78,7 @@ fi
 function update_script() {
   timestamp=$(date +%s)
   wget "https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh?t=${timestamp}" -O "${home_dir}/client.sh" \
-    && chmod -R 777 "${home_dir}/client.sh" \
-    && bash "${home_dir}/client.sh"
+    && chmod -R 777 "${home_dir}/client.sh"
   red "请重新执行"
   cd "$home_dir"
   exit 0
