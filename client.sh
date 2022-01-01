@@ -205,10 +205,15 @@ function install_socks5_proxy() {
 		sudo curl -L https://github.com/txthinking/brook/releases/latest/download/brook_linux_amd64 -o /usr/bin/brook
 		sudo chmod +x /usr/bin/brook
 	fi
+	read -p "输入socks5端口(默认5556): " port
+	if [ -z "$port" ]; then
+		port="5556"
+	fi
 	read -p "输入socks5密码(默认741852): " confirm
 	if [ -z "$confirm" ]; then
 		confirm="741852"
 	fi
+	red "端口为：${port}"
 	red "密码为：${confirm}"
 	# <<- 要求制表符不能为空格，必须为TAB
 	cat <<-EOF >/usr/lib/systemd/system/socks5.service
@@ -219,7 +224,7 @@ function install_socks5_proxy() {
 		
 		[Service]
 		WorkingDirectory=/repo
-		ExecStart=/usr/bin/brook server --listen :5556 --password ${confirm}
+		ExecStart=/usr/bin/brook server --listen :${port} --password ${confirm}
 		Restart=on-abnormal
 		RestartSec=5s
 		KillMode=mixed
@@ -230,6 +235,7 @@ function install_socks5_proxy() {
 		[Install]
 		WantedBy=multi-user.target
 	EOF
+	sudo systemctl daemon-reload
 	sudo systemctl enable socks5.service
 	sudo systemctl start socks5.service
 	sudo journalctl -u socks5.service
