@@ -96,7 +96,7 @@ function install_github_cli() {
 }
 
 function updateScript() {
-  wget -N https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh && chmod -R 777 "$home_dir"/client.sh && bash "$home_dir"/client.sh
+  wget -N --no-cache https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh && chmod -R 777 "$home_dir"/client.sh && bash "$home_dir"/client.sh
 }
 
 function start_menu() {
