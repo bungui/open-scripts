@@ -77,8 +77,8 @@ fi
 
 function update_script() {
   timestamp=$(date +%s)
-  wget "https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh?t=${timestamp}" -O "${home_dir}/client.sh" \
-    && chmod -R 777 "${home_dir}/client.sh"
+  wget "https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh?t=${timestamp}" -O "${home_dir}/client.sh" &&
+    chmod -R 777 "${home_dir}/client.sh"
   clear
   bash "${home_dir}/client.sh"
 }
@@ -159,7 +159,13 @@ function clone_client_repo() {
     cd py-aiohttp-client
     check_virtualenv
   fi
+
+}
+
+function install_task_whois_service() {
+  cd /repo/py-aiohttp-client
   cp deploy/task_whois.service /usr/lib/systemd/system/task_whois.service
+  sudo systemctl daemon-reload
   sudo systemctl enable task_whois.service
   sudo systemctl start task_whois.service
   sudo journalctl -f -u task_whois.service
@@ -182,25 +188,29 @@ function start_menu() {
   echo "1. 安装github命令行"
   echo "2. 通过gh登陆github"
   echo "3. 克隆或者更新客户端仓库"
+  echo "4. 安装task_whois服务"
   echo "v. 更新脚本"
   echo "0. 退出脚本"
   read -p "请输入选项:" menuNumberInput
   case "$menuNumberInput" in
-    "1")
-      install_github_cli
-      ;;
-    "2")
-      gh_login
-      ;;
-    "3")
-      clone_client_repo
-      ;;
-    "v")
-      update_script
-      ;;
-    *)
-      red "退出"
-      ;;
+  "1")
+    install_github_cli
+    ;;
+  "2")
+    gh_login
+    ;;
+  "3")
+    clone_client_repo
+    ;;
+  "4")
+    install_task_whois_service
+    ;;
+  "v")
+    update_script
+    ;;
+  *)
+    red "退出"
+    ;;
   esac
 }
 
