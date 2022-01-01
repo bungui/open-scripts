@@ -218,7 +218,7 @@ function install_socks5_proxy() {
 		userpass="741852++"
 	fi
 	red "端口为：${port}"
-	red "端口为：${username}"
+	red "用户名为：${username}"
 	red "密码为：${userpass}"
 	# <<- 要求制表符不能为空格，必须为TAB
 	cat <<-EOF >/usr/lib/systemd/system/socks5.service
