@@ -96,7 +96,7 @@ function install_github_cli() {
 }
 
 function updateScript() {
-  wget -N https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh -O "$home_dir"/client.sh && chmod -R 777 "$home_dir"/client.sh && bash "$home_dir"/client.sh
+  wget -N https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh && chmod -R 777 "$home_dir"/client.sh && bash "$home_dir"/client.sh
 }
 
 function start_menu() {
@@ -117,6 +117,7 @@ function start_menu() {
   green "下面是工具箱提供的一些功能"
   echo "                            "
   echo "1. 安装github命令行"
+  echo "2. 通过gh登陆github"
   echo "                            "
   echo "v. 更新脚本"
   echo "0. 退出脚本"
