@@ -192,6 +192,9 @@ function security_enhance() {
     red "开始修改fg密码"
     sudo passwd fg
   fi
+  red "安全配置一览："
+  red "sshd配置： "
+  cat /etc/ssh/sshd_config | grep -i root
 }
 
 function start_menu() {
