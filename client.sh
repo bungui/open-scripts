@@ -81,6 +81,7 @@ function update_script() {
     && chmod -R 777 "${home_dir}/client.sh" \
     && bash "${home_dir}/client.sh"
   red "请重新执行"
+  cd "$home_dir"
   exit 0
 }
 
