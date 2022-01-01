@@ -5,6 +5,7 @@
 arch=$(uname -m)
 virt=$(systemd-detect-virt)
 kernelVer=$(uname -r)
+home_dir=$(cd ~; pwd)
 
 green() {
   echo -e "\033[32m\033[01m$1\033[0m"
@@ -95,7 +96,7 @@ function install_github_cli() {
 }
 
 function updateScript() {
-  wget -N https://raw.githubusercontent.com/Misaka-blog/MisakaLinuxToolbox/master/MisakaToolbox.sh && chmod -R 777 ~/client.sh && bash ~/client.sh
+  wget -N https://raw.githubusercontent.com/Misaka-blog/MisakaLinuxToolbox/master/MisakaToolbox.sh && chmod -R 777 "$home_dir"/client.sh && bash "$home_dir"/client.sh
 }
 
 function start_menu() {
