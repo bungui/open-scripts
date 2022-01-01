@@ -237,7 +237,7 @@ function install_socks5_proxy() {
 	EOF
 	sudo systemctl daemon-reload
 	sudo systemctl enable socks5.service
-	sudo systemctl start socks5.service
+	sudo systemctl restart socks5.service
 	sudo journalctl -u socks5.service
 	red "安装socks5服务成功"
 }
