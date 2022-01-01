@@ -171,6 +171,23 @@ function install_task_whois_service() {
   sudo journalctl -f -u task_whois.service
 }
 
+function security_enhance() {
+  read -p "修改root密码[y/N]: " confirm
+  if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
+    sudo passwd root
+  fi
+  read -p "禁止root通过ssh登陆[y/N]: " confirm
+  if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
+    sudo sed -i -E "s/PermitRootLogin prohibit-password/PermitRootLogin no/" /etc/ssh/sshd_config
+    sudo sed -i -E "s/PermitRootLogin yes/PermitRootLogin no/" /etc/ssh/sshd_config
+  fi
+  read -p "增加fg用户[y/N]: " confirm
+  if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
+    sudo useradd -m -G sudo -s /bin/bash fg
+    sudo passwd fg
+  fi
+}
+
 function start_menu() {
   clear
   red "============================"
@@ -185,24 +202,28 @@ function start_menu() {
   yellow "内核版本：$kernelVer"
   echo "                            "
   green "下面是工具箱提供的一些功能:"
-  echo "1. 安装github命令行"
-  echo "2. 通过gh登陆github"
-  echo "3. 克隆或者更新客户端仓库"
-  echo "4. 安装task_whois服务"
+  echo "1. 安全加固"
+  echo "2. 安装github命令行"
+  echo "3. 通过gh登陆github"
+  echo "4. 克隆或者更新客户端仓库"
+  echo "5. 安装task_whois服务"
   echo "v. 更新脚本"
   echo "0. 退出脚本"
   read -p "请输入选项:" menuNumberInput
   case "$menuNumberInput" in
   "1")
-    install_github_cli
+    security_enhance
     ;;
   "2")
-    gh_login
+    install_github_cli
     ;;
   "3")
-    clone_client_repo
+    gh_login
     ;;
   "4")
+    clone_client_repo
+    ;;
+  "5")
     install_task_whois_service
     ;;
   "v")
