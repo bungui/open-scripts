@@ -182,11 +182,24 @@ function start_menu() {
   echo "0. 退出脚本"
   read -p "请输入选项:" menuNumberInput
   case "$menuNumberInput" in
-    1) install_github_cli ;;
-    2) gh_login ;;
-    3) clone_client_repo ;;
-    v) updateScript ;;
-    0) exit 0 ;;
+    1)
+      install_github_cli
+      ;;
+    2)
+      gh_login
+      ;;
+    3)
+      clone_client_repo
+      ;;
+    v)
+      updateScript
+      ;;
+    0)
+      exit 0
+      ;;
+    *)
+      exit 1
+      ;;
   esac
 }
 
