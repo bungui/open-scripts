@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
+# 参考： https://github.com/Misaka-blog/MisakaLinuxToolbox
 # 一些全局变量
-ver="1.4.5"
-changeLog="新增禁用Oracle系统自带防火墙、Acme.sh和Screen后台任务管理脚本"
 arch=$(uname -m)
 virt=$(systemd-detect-virt)
 kernelVer=$(uname -r)
@@ -71,6 +70,34 @@ else
   green "sudo已安装"
 fi
 
+function install_github_cli() {
+  # 参考： https://github.com/cli/cli/blob/trunk/docs/install_linux.md
+  if ! type gh >/dev/null 2>&1; then
+    yellow "gh未安装，安装中"
+    if [ $release = "Centos" ]; then
+      sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+      sudo dnf install gh
+    else
+      curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+      echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
+      sudo apt update
+      sudo apt install gh
+    fi
+  else
+    green "gh已安装，更新中"
+    if [ $release = "Centos" ]; then
+      sudo dnf update gh
+    else
+      sudo apt update
+      sudo apt install gh
+    fi
+  fi
+}
+
+function updateScript() {
+  wget -N https://raw.githubusercontent.com/Misaka-blog/MisakaLinuxToolbox/master/MisakaToolbox.sh && chmod -R 777 ~/client.sh && bash ~/client.sh
+}
+
 function start_menu() {
   clear
   red "============================"
@@ -80,10 +107,6 @@ function start_menu() {
   red "  https://aio.pator.fun     "
   echo "                           "
   red "============================"
-  echo "                            "
-  green "检测到您当前运行的工具箱版本是：$ver"
-  green "更新日志：$changeLog"
-  echo "                            "
   yellow "检测到VPS信息如下"
   yellow "处理器架构：$arch"
   yellow "虚拟化架构：$virt"
@@ -92,44 +115,14 @@ function start_menu() {
   echo "                            "
   green "下面是工具箱提供的一些功能"
   echo "                            "
-  echo "1. VPS修改登录方式为root密码登录"
-  echo "2. VPS安装warp"
-  echo "3. X-ui面板安装"
-  echo "4. Mack-a 节点配置脚本"
-  echo "                            "
-  echo "5. 一键开启BBR"
-  echo "6. 安装宝塔开心版"
-  echo "7. 一键安装docker"
-  echo "8. 流媒体解锁测试"
-  echo "                            "
-  echo "9. VPS三网测速"
-  echo "10. 修改主机名"
-  echo "11. 安装可乐大佬的ServerStatus-Horatu探针"
-  echo "12. hijk大佬的v2脚本，支持IBM LinuxONE s390x的机器搭建节点"
-  echo "                            "
-  echo "13. 一键安装 Telegram MTProxy 代理服务器"
-  echo "14. Acme.sh 证书申请脚本"
-  echo "15. Screen 后台运行管理脚本"
-  echo "16. 禁用Oracle（甲骨文）系统自带防火墙"
+  echo "1. 安装github命令行"
   echo "                            "
   echo "v. 更新脚本"
   echo "0. 退出脚本"
   echo "                            "
   read -p "请输入选项:" menuNumberInput
   case "$menuNumberInput" in
-  1) rootLogin ;;
-  2) warp ;;
-  3) xui ;;
-  4) macka ;;
-  5) bbr ;;
-  6) bthappy ;;
-  7) docker ;;
-  8) mediaUnblockTest ;;
-  9) vpsSpeedTest ;;
-  10) changehostname ;;
-  11) serverstatus ;;
-  12) hijk ;;
-  13) tgMTProxy ;;
+  1) install_github_cli ;;
   v) updateScript ;;
   0) exit 0 ;;
   esac
