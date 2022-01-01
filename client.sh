@@ -192,9 +192,11 @@ function security_enhance() {
     red "开始修改fg密码"
     sudo passwd fg
   fi
-  red "安全配置一览："
-  red "sshd配置： "
-  cat /etc/ssh/sshd_config | grep -i root
+  read -p "ssh改用55555端口[y/N]: " confirm
+  if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
+    sudo sed -i -E "s/#Port 22/Port 55555/" /etc/ssh/sshd_config
+    sudo systemctl restart sshd.service
+  fi
 }
 
 function start_menu() {
