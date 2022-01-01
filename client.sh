@@ -198,7 +198,7 @@ function start_menu() {
       update_script
       ;;
     *)
-      red "没有对应的菜单项，退出"
+      red "退出"
       ;;
   esac
 }
