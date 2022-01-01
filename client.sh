@@ -75,6 +75,10 @@ else
   green "sudo已安装"
 fi
 
+function updateScript() {
+  wget -N --no-cache https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh && chmod -R 777 "$home_dir"/client.sh && bash "$home_dir"/client.sh
+}
+
 function install_github_cli() {
   # 参考： https://github.com/cli/cli/blob/trunk/docs/install_linux.md
   if ! type gh >/dev/null 2>&1; then
@@ -110,8 +114,42 @@ function gh_login() {
   fi
 }
 
-function updateScript() {
-  wget -N --no-cache https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh && chmod -R 777 "$home_dir"/client.sh && bash "$home_dir"/client.sh
+function check_virtualenv() {
+
+  if [ ! -z "$VIRTUAL_ENV" ]; then
+    red "已经在virtualenv中"
+    return 1
+  fi
+
+  dpkg -s python3-virtualenv
+  result=$?
+  if [ $result -eq 1 ]; then
+    red "未安装python3-virtualenv"
+    sudo apt update
+    sudo apt install python3 python3-pip python3-virtualenv
+  fi
+  if [ ! -d .git ]; then
+    red "不是仓库根目录"
+    exit 1
+  fi
+  if [ ! -d venv ]; then
+    virtualenv venv
+  fi
+  source venv/bin/activate
+  python -m pip install pip
+}
+
+function clone_client_repo() {
+  if [ -d /repo/py-aiohttp-client/ ]; then
+    echo "仓库已经克隆"
+    cd /repo/py-aiohttp-client
+    git pull
+  else
+    gh repo clone brilon/py-aiohttp-client
+    cd /repo/py-aiohttp-client
+    check_virtualenv
+  fi
+
 }
 
 function start_menu() {
