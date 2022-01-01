@@ -5,7 +5,10 @@
 arch=$(uname -m)
 virt=$(systemd-detect-virt)
 kernelVer=$(uname -r)
-home_dir=$(cd ~; pwd)
+home_dir=$(
+  cd ~
+  pwd
+)
 
 green() {
   echo -e "\033[32m\033[01m$1\033[0m"
@@ -95,6 +98,15 @@ function install_github_cli() {
   fi
 }
 
+function gh_login() {
+  gh auth status
+  result=$?
+  if [ $result -eq 1 ]; then
+      echo "未登陆github"
+      gh auth login
+  fi
+}
+
 function updateScript() {
   wget -N --no-cache https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh && chmod -R 777 "$home_dir"/client.sh && bash "$home_dir"/client.sh
 }
@@ -125,9 +137,12 @@ function start_menu() {
   read -p "请输入选项:" menuNumberInput
   case "$menuNumberInput" in
   1) install_github_cli ;;
+  2) gh_login ;;
   v) updateScript ;;
   0) exit 0 ;;
   esac
 }
 
 start_menu
+
+# 防止换行被吞掉
