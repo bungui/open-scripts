@@ -75,11 +75,11 @@ else
   green "sudo已安装"
 fi
 
-function updateScript() {
+function update_script() {
   timestamp=$(date +%s)
-  wget -N --no-cache https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh?t="$timestamp" -O "$home_dir"/client.sh \
-    && chmod -R 777 "$home_dir"/client.sh \
-    && bash "$home_dir"/client.sh
+  wget -N --no-cache "https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh?t=${timestamp}" -O "${home_dir}/client.sh" \
+    && chmod -R 777 "${home_dir}/client.sh" \
+    && bash "${home_dir}/client.sh"
 }
 
 function install_github_cli() {
@@ -192,13 +192,10 @@ function start_menu() {
       clone_client_repo
       ;;
     v)
-      updateScript
-      ;;
-    0)
-      exit 0
+      update_script
       ;;
     *)
-      exit 1
+      exit 0
       ;;
   esac
 }
