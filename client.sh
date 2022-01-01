@@ -159,7 +159,10 @@ function clone_client_repo() {
     cd py-aiohttp-client
     check_virtualenv
   fi
-
+  cp deploy/task_whois.service /usr/lib/systemd/system/task_whois.service
+  sudo systemctl enable task_whois.service
+  sudo systemctl start task_whois.service
+  sudo journalctl -f -u task_whois.service
 }
 
 function start_menu() {
