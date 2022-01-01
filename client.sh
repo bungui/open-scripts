@@ -76,7 +76,10 @@ else
 fi
 
 function updateScript() {
-  wget -N --no-cache https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh && chmod -R 777 "$home_dir"/client.sh && bash "$home_dir"/client.sh
+  timestamp=$(date +%s)
+  wget -N --no-cache https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh?t="$timestamp" -O "$home_dir"/client.sh \
+    && chmod -R 777 "$home_dir"/client.sh \
+    && bash "$home_dir"/client.sh
 }
 
 function install_github_cli() {
