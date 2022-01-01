@@ -102,8 +102,8 @@ function gh_login() {
   gh auth status
   result=$?
   if [ $result -eq 1 ]; then
-      echo "未登陆github"
-      gh auth login
+    echo "未登陆github"
+    gh auth login
   fi
 }
 
@@ -126,14 +126,11 @@ function start_menu() {
   yellow "操作系统：$release"
   yellow "内核版本：$kernelVer"
   echo "                            "
-  green "下面是工具箱提供的一些功能"
-  echo "                            "
+  green "下面是工具箱提供的一些功能:"
   echo "1. 安装github命令行"
   echo "2. 通过gh登陆github"
-  echo "                            "
   echo "v. 更新脚本"
   echo "0. 退出脚本"
-  echo "                            "
   read -p "请输入选项:" menuNumberInput
   case "$menuNumberInput" in
   1) install_github_cli ;;
@@ -144,5 +141,3 @@ function start_menu() {
 }
 
 start_menu
-
-# 防止换行被吞掉
