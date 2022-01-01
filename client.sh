@@ -209,12 +209,17 @@ function install_socks5_proxy() {
 	if [ -z "$port" ]; then
 		port="55556"
 	fi
-	read -p "输入socks5密码(默认741852++): " confirm
-	if [ -z "$confirm" ]; then
-		confirm="741852++"
+	read -p "输入socks5用户名(默认fg): " username
+	if [ -z "$username" ]; then
+		username="fg"
+	fi
+	read -p "输入socks5密码(默认741852++): " userpass
+	if [ -z "$userpass" ]; then
+		userpass="741852++"
 	fi
 	red "端口为：${port}"
-	red "密码为：${confirm}"
+	red "端口为：${username}"
+	red "密码为：${userpass}"
 	# <<- 要求制表符不能为空格，必须为TAB
 	cat <<-EOF >/usr/lib/systemd/system/socks5.service
 		[Unit]
@@ -224,7 +229,7 @@ function install_socks5_proxy() {
 		
 		[Service]
 		WorkingDirectory=/repo
-		ExecStart=/usr/bin/brook server --listen :${port} --password "${confirm}"
+		ExecStart=/usr/bin/brook socks5 --socks5 0.0.0.0:${port} --username ${username} --password "${userpass}"
 		Restart=on-abnormal
 		RestartSec=5s
 		KillMode=mixed
