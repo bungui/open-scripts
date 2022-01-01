@@ -174,6 +174,7 @@ function install_task_whois_service() {
 function security_enhance() {
   read -p "修改root密码[y/N]: " confirm
   if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
+    red "开始修改root密码"
     sudo passwd root
   fi
   read -p "禁止root通过ssh登陆[y/N]: " confirm
@@ -184,6 +185,7 @@ function security_enhance() {
   read -p "增加fg用户[y/N]: " confirm
   if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
     sudo useradd -m -G sudo -s /bin/bash fg
+    red "开始修改fg密码"
     sudo passwd fg
   fi
 }
