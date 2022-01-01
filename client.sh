@@ -181,10 +181,14 @@ function security_enhance() {
   if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
     sudo sed -i -E "s/PermitRootLogin prohibit-password/PermitRootLogin no/" /etc/ssh/sshd_config
     sudo sed -i -E "s/PermitRootLogin yes/PermitRootLogin no/" /etc/ssh/sshd_config
+    sudo systemctl restart sshd.service
   fi
   read -p "增加fg用户[y/N]: " confirm
   if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
     sudo useradd -m -G sudo -s /bin/bash fg
+  fi
+  read -p "修改fg用户密码[y/N]: " confirm
+  if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
     red "开始修改fg密码"
     sudo passwd fg
   fi
