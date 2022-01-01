@@ -148,8 +148,10 @@ function clone_client_repo() {
     cd /repo/py-aiohttp-client
     git pull
   else
+    mkdir -p /repo
+    cd /repo
     gh repo clone brilon/py-aiohttp-client
-    cd /repo/py-aiohttp-client
+    cd py-aiohttp-client
     check_virtualenv
   fi
 
