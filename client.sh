@@ -308,7 +308,7 @@ function install_webdav_server() {
 			        modify: true
 		EOF
 	fi
-	red "请修改默认配置文件: /opt/webdav.config"
+	red "先手工修改默认配置文件: /opt/webdav.config"
 	read -p "按任意建继续" confirm
 	sudo cat <<-EOF >/usr/lib/systemd/system/webdav.service
 		[Unit]
