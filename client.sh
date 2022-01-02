@@ -249,6 +249,8 @@ function install_nginx() {
 		red "开始安装nginx"
 		sudo apt update
 		sudo apt install nginx -y
+	else
+		red "已安装nginx"
 	fi
 }
 
@@ -264,6 +266,8 @@ function install_certbot() {
 		sudo snap refresh core
 		sudo snap install --classic certbot
 		sudo ln -s /snap/bin/certbot /usr/bin/certbot
+	else
+		red "已安装certbot"
 	fi
 }
 
