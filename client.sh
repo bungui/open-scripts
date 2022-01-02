@@ -82,19 +82,21 @@ function download_script_repo_file() {
 		red "获取提交ID失败"
 		exit 1
 	fi
-	echo "最新提交： ${last_commit}"
+	echo "最新的提交ID： ${last_commit}"
 	script_url="https://raw.githubusercontent.com/bungui/open-scripts/dev/${script_uri}?commit=${last_commit}"
-	if ! wget --no-cache "$script_url" -O "$dest_path"; then
-		red "下载失败"
+	red "下载地址： ${script_url}"
+	if ! sudo wget --quiet --no-cache "$script_url" -O "$dest_path"; then
+		red "下载失败，退出"
 		exit 1
 	fi
-	red "下载成功： ${dest_path}"
+	red "下载成功，文件路径： ${dest_path}"
 }
 
 function get_latest_client_script() {
 	client_path="/repo/client.sh"
 	download_script_repo_file "client.sh" "$client_path"
-	chmod +x "$client_path"
+	# 禁止敏感信息泄漏
+	sudo chmod 700 "$client_path"
 	exit 0
 }
 
