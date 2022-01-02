@@ -309,7 +309,7 @@ function install_webdav_server() {
 		EOF
 	fi
 	red "请修改默认配置文件: /opt/webdav.config"
-	confirm -p "按任意建继续" confirm
+	read -p "按任意建继续" confirm
 	sudo cat <<-EOF >/usr/lib/systemd/system/webdav.service
 		[Unit]
 		Description=WebDAV server
