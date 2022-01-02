@@ -415,8 +415,8 @@ function install_backup_cron_job() {
 	if [ ! -f /repo/backup.sh ]; then
 		download_script_repo_file "example/backup.sh" "/repo/backup.sh"
 	else
-		red "文件已存在，是否覆盖[y/N]: " confirm
-		if [ "${confirm}" = 'y' ] || [ "$confirm" = 'Y' ]; then
+		read -p "文件已存在，是否覆盖[y/N]: " confirm
+		if [ "$confirm" = 'y' ] || [ "$confirm" = 'Y' ]; then
 			download_script_repo_file "example/backup.sh" "/repo/backup.sh"
 		fi
 	fi
