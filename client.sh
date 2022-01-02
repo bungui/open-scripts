@@ -77,9 +77,10 @@ fi
 
 function update_script() {
 	timestamp=$(date +%s)
-	wget "https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh?t=${timestamp}" -O "${home_dir}/client.sh" &&
-		chmod -R 777 "${home_dir}/client.sh"
-	red "更新成功，路径： ${home_dir}/client.sh"
+	client_path="${home_dir}/client.sh"
+	script_url="https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh?t=${timestamp}"
+	wget "$script_url" -O "$client_path" &&	chmod -R 777 "$client_path"
+	red "更新成功，路径： $client_path"
 	exit 0
 }
 
