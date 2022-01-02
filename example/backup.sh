@@ -40,4 +40,4 @@ sudo rm "${redis_tmp_file}" -f
 echo "备份redis成功"
 
 # 删除30天前的文件
-delete_files_n_days_ago "${backup_dir}" "+30"
+# delete_files_n_days_ago "${backup_dir}" "+30"
