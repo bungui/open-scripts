@@ -414,6 +414,11 @@ function install_webdav_client() {
 function install_backup_cron_job() {
 	if [ ! -f /repo/backup.sh ]; then
 		download_script_repo_file "example/backup.sh" "/repo/backup.sh"
+	else
+		red "文件已存在，是否覆盖[y/N]: " confirm
+		if [ "${confirm}" = 'y' ] || [ "$confirm" = 'Y' ]; then
+			download_script_repo_file "example/backup.sh" "/repo/backup.sh"
+		fi
 	fi
 	red "修改默认的配置，路径： /repo/backup.sh"
 	read -p "按任意建继续" confirm
