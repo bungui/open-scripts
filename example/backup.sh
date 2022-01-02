@@ -12,7 +12,9 @@ function delete_files_n_days_ago() {
 	dir_path=$1
 	# 例如，+7表示7天前的文件，-7表示7天内的文件
 	n_days=$2
-	echo "删除${dir_path}目录，${n_days}天的历史文件"
+	echo "${dir_path}目录，${n_days}天的文件"
+	sudo find "${dir_path}" -type f -mtime "${n_days}"
+	echo "开始删除"
 	sudo find "${dir_path}" -type f -mtime "${n_days}" -delete
 }
 
