@@ -257,11 +257,9 @@ function install_webdav_server() {
 		echo "已经安装webdav"
 	fi
 
-	sudo mkdir -p /opt
-
 	if [ ! -f /opt/webdav.config ]; then
-		sudo cat <<-EOF > /opt/webdav.config
-			# Server related settings
+		sudo mkdir -p /opt
+		sudo cat <<-EOF >/opt/webdav.config
 			address: 127.0.0.1
 			port: 55557
 			auth: true
@@ -280,9 +278,11 @@ function install_webdav_server() {
 			    password: admin
 			    scope: /a/different/path
 		EOF
+
+		red "先手工修改默认配置文件: /opt/webdav.config"
+		read -p "按任意建继续" confirm
 	fi
-	red "先手工修改默认配置文件: /opt/webdav.config"
-	read -p "按任意建继续" confirm
+
 	sudo mkdir -p /webdav
 	sudo cat <<-EOF >/usr/lib/systemd/system/webdav.service
 		[Unit]
@@ -304,6 +304,7 @@ function install_webdav_server() {
 	sudo systemctl restart webdav.service
 	sudo journalctl -u webdav.service
 	red "安装webdav服务成功"
+	red "配置文件地址：/opt/webdav.config"
 }
 
 function start_menu() {
