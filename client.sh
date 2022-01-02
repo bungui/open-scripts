@@ -76,7 +76,7 @@ else
 fi
 
 function update_script() {
-	sudo mkdir /repo
+	sudo mkdir -p /repo
 	client_path="/repo/client.sh"
 	last_commit=$(curl -s https://api.github.com/repos/bungui/open-scripts/branches/dev | grep -ioE "\"sha\": \"([a-z0-9]+)\"" | head -1 | awk -F '"' '{print $4}' )
 	if [ -z "$last_commit" ]; then
