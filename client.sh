@@ -80,6 +80,7 @@ function update_script() {
 		red "获取提交ID失败"
 		exit 1
 	fi
+	echo "最新提交： ${last_commit}"
 	script_url="https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh?commit=${last_commit}"
 	if ! wget "$script_url" -O "$client_path"; then
 		red "下载失败"
