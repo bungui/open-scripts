@@ -340,16 +340,16 @@ function install_webdav_server() {
 		sudo cat <<-EOF >/etc/nginx/sites-available/webdav
 			server {
 			  server_name example.com;
-
+			
 			  root /var/www/html;
 			  index index.html index.htm index.nginx-debian.html;
-
+			
 			  location / {
 			    proxy_pass http://127.0.0.1:${port};
 			    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
 			    proxy_set_header Host \$http_host;
 			    proxy_set_header X-Real-IP \$remote_addr;
-          proxy_set_header REMOTE-HOST \$remote_addr;
+			          proxy_set_header REMOTE-HOST \$remote_addr;
 			    proxy_redirect off;
 			    client_max_body_size 20000m;
 			  }
@@ -360,6 +360,40 @@ function install_webdav_server() {
 		read -p "按任意建开始进行修改" confirm
 		sudo certbot --nginx
 	fi
+}
+
+function install_webdav_client() {
+
+	if [ ! -f /usr/bin/rclone ]; then
+		echo "开始安装rclone"
+		curl https://rclone.org/install.sh | sudo bash
+	fi
+
+	if ! sudo rclone listremotes | grep -q hh_webdav; then
+		red "未发现远程配置：hh_webdav"
+		sudo rclone config
+	fi
+
+	sudo cat <<-EOF >/lib/systemd/system/rclone.service
+		[Unit]
+		Description=Rclone Mount
+		After=network-online.target
+		
+		[Service]
+		Type=simple
+		ExecStart=/usr/bin/rclone mount hh_webdav:/ /data/backup --cache-dir /tmp --allow-other --vfs-cache-mode writes --allow-non-empty
+		Restart=on-abort
+		
+		[Install]
+		WantedBy=default.target
+	EOF
+
+	sudo systemctl daemon-reload
+	sudo systemctl enable rclone.service
+	sudo systemctl restart rclone.service
+	sudo systemctl status rclone.service
+
+	red "rclone配置完成"
 }
 
 function start_menu() {
@@ -385,6 +419,7 @@ function start_menu() {
 	echo "7. 安装nginx"
 	echo "8. 安装certbot"
 	echo "9. 安装webdav服务"
+	echo "10. 安装rclone客户端"
 	echo "v. 更新脚本"
 	echo "0. 退出脚本"
 	read -p "请输入选项:" menuNumberInput
@@ -415,6 +450,9 @@ function start_menu() {
 		;;
 	"9")
 		install_webdav_server
+		;;
+	"10")
+		install_webdav_client
 		;;
 	"v")
 		update_script
