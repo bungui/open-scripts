@@ -84,7 +84,7 @@ function download_script_repo_file() {
 	fi
 	echo "最新提交： ${last_commit}"
 	script_url="https://raw.githubusercontent.com/bungui/open-scripts/dev/${script_uri}?commit=${last_commit}"
-	if ! wget "$script_url" -O "$dest_path"; then
+	if ! wget --no-cache "$script_url" -O "$dest_path"; then
 		red "下载失败"
 		exit 1
 	fi
