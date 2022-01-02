@@ -260,7 +260,7 @@ function install_webdav_server() {
 	sudo mkdir -p /opt
 
 	if [ ! -f /opt/webdav.config ]; then
-		sudo cat <<-EOF >/opt/webdav.config
+		sudo cat <<-EOF > /opt/webdav.config
 			# Server related settings
 			address: 127.0.0.1
 			port: 55557
