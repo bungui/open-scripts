@@ -6,10 +6,7 @@
 arch=$(uname -m)
 virt=$(systemd-detect-virt)
 kernelVer=$(uname -r)
-home_dir=$(
-	cd ~
-	pwd
-)
+home_dir="/repo"
 
 green() {
 	echo -e "\033[32m\033[01m$1\033[0m"
@@ -431,7 +428,7 @@ function start_menu() {
 	echo "9. 安装webdav服务"
 	echo "10. 安装rclone客户端"
 	echo "v. 更新脚本"
-	echo "0. 退出脚本"
+	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
 	case "$menuNumberInput" in
 	"1")
