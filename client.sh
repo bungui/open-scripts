@@ -275,41 +275,15 @@ function install_webdav_server() {
 			modify: true
 			rules: []
 			
-			# CORS configuration
-			cors:
-			  enabled: true
-			  credentials: true
-			  allowed_headers:
-			    - Depth
-			  allowed_hosts:
-			    - http://localhost:8080
-			  allowed_methods:
-			    - GET
-			  exposed_headers:
-			    - Content-Length
-			    - Content-Range
-			
 			users:
 			  - username: admin
 			    password: admin
 			    scope: /a/different/path
-			  - username: encrypted
-			    password: "{bcrypt}$2y$10$zEP6oofmXFeHaeMfBNLnP.DO8m.H.Mwhd24/TOX2MWLxAExXi4qgi"
-			  - username: "{env}ENV_USERNAME"
-			    password: "{env}ENV_PASSWORD"
-			  - username: basic
-			    password: basic
-			    modify:   false
-			    rules:
-			      - regex: false
-			        allow: false
-			        path: /some/file
-			      - path: /public/access/
-			        modify: true
 		EOF
 	fi
 	red "先手工修改默认配置文件: /opt/webdav.config"
 	read -p "按任意建继续" confirm
+	sudo mkdir -p /webdav
 	sudo cat <<-EOF >/usr/lib/systemd/system/webdav.service
 		[Unit]
 		Description=WebDAV server
