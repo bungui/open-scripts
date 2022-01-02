@@ -374,7 +374,7 @@ function install_webdav_client() {
 		sudo rclone config
 	fi
 
-	sudo cat <<-EOF >/lib/systemd/system/rclone.service
+	sudo cat <<-EOF >/usr/lib/systemd/system/rclone.service
 		[Unit]
 		Description=Rclone Mount
 		After=network-online.target
