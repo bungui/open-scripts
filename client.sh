@@ -73,21 +73,28 @@ else
 	green "sudo已安装"
 fi
 
-function update_script() {
-	client_path="/repo/client.sh"
+# 获取最新的文件，比如：download_script_repo_file "example/backup.sh" "/repo/example/backup.sh"
+function download_script_repo_file() {
+	script_uri=$1
+	dest_path=$2
 	last_commit=$(curl -s https://api.github.com/repos/bungui/open-scripts/branches/dev | grep -ioE "\"sha\": \"([a-z0-9]+)\"" | head -1 | awk -F '"' '{print $4}' )
 	if [ -z "$last_commit" ]; then
 		red "获取提交ID失败"
 		exit 1
 	fi
 	echo "最新提交： ${last_commit}"
-	script_url="https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh?commit=${last_commit}"
-	if ! wget "$script_url" -O "$client_path"; then
+	script_url="https://raw.githubusercontent.com/bungui/open-scripts/dev/${script_uri}?commit=${last_commit}"
+	if ! wget "$script_url" -O "$dest_path"; then
 		red "下载失败"
 		exit 1
 	fi
+	red "下载成功： ${dest_path}"
+}
+
+function get_latest_client_script() {
+	client_path="/repo/client.sh"
+	download_script_repo_file "client.sh" "$client_path"
 	chmod +x "$client_path"
-	red "下载成功，路径： $client_path"
 	exit 0
 }
 
@@ -463,7 +470,7 @@ function start_menu() {
 		install_webdav_client
 		;;
 	"v")
-		update_script
+		get_latest_client_script
 		;;
 	*)
 		red "退出"
