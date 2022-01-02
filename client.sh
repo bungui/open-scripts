@@ -79,9 +79,12 @@ function update_script() {
 	timestamp=$(date +%s)
 	client_path="${home_dir}/client.sh"
 	script_url="https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh?t=${timestamp}"
-	wget "$script_url" -O "$client_path"
+	if ! wget "$script_url" -O "$client_path"; then
+		red "下载失败"
+		exit 1
+	fi
 	chmod +x "$client_path"
-	red "更新成功，路径： $client_path"
+	red "下载成功，路径： $client_path"
 	exit 0
 }
 
