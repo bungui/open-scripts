@@ -262,8 +262,8 @@ function install_webdav_server() {
 	if [ ! -f /opt/webdav.config ]; then
 		sudo cat <<-EOF >/opt/webdav.config
 			# Server related settings
-			address: 0.0.0.0
-			port: 0
+			address: 127.0.0.1
+			port: 55557
 			auth: true
 			tls: false
 			cert: cert.pem
