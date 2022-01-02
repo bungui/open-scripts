@@ -291,22 +291,20 @@ function install_webdav_server() {
 			port: 55557
 			auth: true
 			tls: false
-			cert: cert.pem
-			key: key.pem
 			prefix: /
 			
-			# Default user settings (will be merged)
 			scope: .
 			modify: true
 			rules: []
 			
 			users:
-			  - username: admin
-			    password: admin
-			    scope: /a/different/path
+			  - username: cloud
+			    password: cloud
+			    scope: /webdav/cloud
 		EOF
 
 		red "先手工修改默认配置文件: /opt/webdav.yml"
+		red "注意需要保证scope的路径存在"
 		read -p "按任意建继续" confirm
 	fi
 
