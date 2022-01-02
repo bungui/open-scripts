@@ -76,7 +76,8 @@ else
 fi
 
 function update_script() {
-	client_path="${home_dir}/client.sh"
+	sudo mkdir /repo
+	client_path="/repo/client.sh"
 	last_commit=$(curl -s https://api.github.com/repos/bungui/open-scripts/branches/dev | grep -ioE "\"sha\": \"([a-z0-9]+)\"" | head -1 | awk -F '"' '{print $4}' )
 	if [ -z "$last_commit" ]; then
 		red "获取提交ID失败"
