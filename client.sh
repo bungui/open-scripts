@@ -355,7 +355,7 @@ function install_webdav_server() {
 					}
 			}
 		EOF
-		sudo ln -s /etc/nginx/sites-available/webdav /etc/nginx/sites-enable/webdav
+		sudo ln -s /etc/nginx/sites-available/webdav /etc/nginx/sites-enabled/webdav
 		red "成功生成默认配置：/etc/nginx/sites-available/webdav"
 		read -p "按任意建开始进行修改" confirm
 		sudo certbot --nginx
