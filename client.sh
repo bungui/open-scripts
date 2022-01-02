@@ -244,6 +244,29 @@ function install_socks5_proxy() {
 	red "安装socks5服务成功"
 }
 
+function install_nginx() {
+	if [ ! -f /usr/sbin/nginx ]; then
+		red "开始安装nginx"
+		sudo apt update
+		sudo apt install nginx -y
+	fi
+}
+
+function install_certbot() {
+	if [ $release != "Ubuntu" ]; then
+		red "非ubuntu系统，不支持certbot安装"
+		return 1
+	fi
+	if [ ! -f /usr/bin/certbot ]; then
+		red "开始安装certbot"
+		# ubuntu 20 lts版本是预装了snap的
+		sudo snap install core
+		sudo snap refresh core
+		sudo snap install --classic certbot
+		sudo ln -s /snap/bin/certbot /usr/bin/certbot
+	fi
+}
+
 # shellcheck disable=SC2120
 function install_webdav_server() {
 	# 参考：https://github.com/hacdias/webdav
@@ -310,6 +333,29 @@ function install_webdav_server() {
 	sudo journalctl -u webdav.service
 	red "安装webdav服务成功"
 	red "配置文件地址：/opt/webdav.yml"
+
+	if [ ! -f /etc/nginx/sites-available/webdav ]; then
+		sudo cat <<-EOF >/etc/nginx/sites-available/webdav
+			server {
+					server_name example.com;
+			
+					root /var/www/html;
+					index index.html index.htm index.nginx-debian.html;
+			
+					location / {
+						proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+						proxy_set_header Host \$http_host;
+						proxy_redirect off;
+						proxy_pass http://127.0.0.1:${port};
+						client_max_body_size 20000m;
+					}
+			}
+		EOF
+		sudo ln -s /etc/nginx/sites-available/webdav /etc/nginx/sites-enable/webdav
+		red "成功生成默认配置：/etc/nginx/sites-available/webdav"
+		read -p "按任意建开始进行修改" confirm
+		sudo certbot --nginx
+	fi
 }
 
 function start_menu() {
@@ -332,7 +378,9 @@ function start_menu() {
 	echo "4. 克隆或者更新客户端仓库"
 	echo "5. 安装task_whois服务"
 	echo "6. 安装Brook socks5服务"
-	echo "7. 安装webdav服务"
+	echo "7. 安装nginx"
+	echo "8. 安装certbot"
+	echo "9. 安装webdav服务"
 	echo "v. 更新脚本"
 	echo "0. 退出脚本"
 	read -p "请输入选项:" menuNumberInput
@@ -356,6 +404,12 @@ function start_menu() {
 		install_socks5_proxy
 		;;
 	"7")
+		install_nginx
+		;;
+	"8")
+		install_certbot
+		;;
+	"9")
 		install_webdav_server
 		;;
 	"v")
