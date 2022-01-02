@@ -412,21 +412,25 @@ function install_webdav_client() {
 }
 
 function install_backup_cron_job() {
-	if [ ! -f /repo/backup.sh ]; then
-		download_script_repo_file "example/backup.sh" "/repo/backup.sh"
+	backup_file="/repo/backup.sh"
+	if [ ! -f "${backup_file}" ]; then
+		download_script_repo_file "example/backup.sh" "${backup_file}"
 	else
 		read -p "文件已存在，是否覆盖[y/N]: " confirm
 		if [ "$confirm" = 'y' ] || [ "$confirm" = 'Y' ]; then
-			download_script_repo_file "example/backup.sh" "/repo/backup.sh"
+			download_script_repo_file "example/backup.sh" "${backup_file}"
 		fi
 	fi
-	red "修改默认的配置，路径： /repo/backup.sh"
+	# 包含敏感信息
+	sudo chmod 700 "${backup_file}"
+	red "修改默认的配置，路径： ${backup_file}"
 	read -p "按任意建继续" confirm
-	if ! sudo crontab -l | grep -q "/repo/backup.sh"; then
-		sudo crontab -l >/tmp/crontab.tmp
-		echo "30 5 */1 * * /usr/bin/bash /repo/backup.sh" >>/tmp/crontab.tmp
-		sudo crontab /tmp/crontab.tmp
-		sudo rm /tmp/crontab.tmp
+	if ! sudo crontab -l | grep -q "${backup_file}"; then
+		tmp_file="/tmp/crontab.tmp"
+		sudo crontab -l > "${tmp_file}"
+		echo "30 5 */1 * * /usr/bin/bash ${backup_file}" >> "${tmp_file}"
+		sudo crontab "${tmp_file}"
+		sudo rm "${tmp_file}"
 	fi
 	echo "配置备份定时任务成功"
 }
