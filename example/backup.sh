@@ -21,7 +21,7 @@ sql_file="/tmp/mysql-${date_str}.sql"
 zip_file="/tmp/mysql-${date_str}.zip"
 mysqldump --all-databases --single-transaction --quick --lock-tables=false -u root -p${mysql_pass} >"${sql_file}"
 zip -9 -r "${zip_file}" "${sql_file}"
-cp "${zip_file}" "${backup_dir}"
+cp "${zip_file}" "${backup_dir}" -f
 rm "${sql_file}" -f
 rm "${zip_file}" -f
 echo "备份mysql成功"
@@ -32,7 +32,7 @@ redis_tmp_file="/tmp/dump.rdb"
 redis_zip_file="/tmp/redis-${date_str}.zip"
 cp "${redis_dump_file}" "${redis_tmp_file}"
 zip -9 -r "${redis_zip_file}" "${redis_tmp_file}"
-cp "${redis_zip_file}" "${backup_dir}"
+cp "${redis_zip_file}" "${backup_dir}" -f
 rm "${redis_zip_file}" -f
 rm "${redis_tmp_file}" -f
 echo "备份redis成功"
