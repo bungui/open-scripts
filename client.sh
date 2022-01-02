@@ -77,7 +77,7 @@ fi
 function download_script_repo_file() {
 	script_uri=$1
 	dest_path=$2
-	last_commit=$(curl -s https://api.github.com/repos/bungui/open-scripts/branches/dev | grep -ioE "\"sha\": \"([a-z0-9]+)\"" | head -1 | awk -F '"' '{print $4}' )
+	last_commit=$(curl -s https://api.github.com/repos/bungui/open-scripts/branches/dev | grep -ioE "\"sha\": \"([a-z0-9]+)\"" | head -1 | awk -F '"' '{print $4}')
 	if [ -z "$last_commit" ]; then
 		red "获取提交ID失败"
 		exit 1
@@ -411,6 +411,21 @@ function install_webdav_client() {
 	red "rclone配置完成"
 }
 
+function install_backup_cron_job() {
+	if [ ! -f /repo/backup.sh ]; then
+		download_script_repo_file "example/backup.sh" "/repo/backup.sh"
+	fi
+	red "修改默认的配置，路径： /repo/backup.sh"
+	read -p "按任意建继续" confirm
+	if ! sudo crontab -l | grep -q "/repo/backup.sh"; then
+		sudo crontab -l >/tmp/crontab.tmp
+		echo "30 5 */1 * * /usr/bin/bash /repo/backup.sh" >>/tmp/crontab.tmp
+		sudo crontab /tmp/crontab.tmp
+		sudo rm /tmp/crontab.tmp
+	fi
+	echo "配置备份定时任务成功"
+}
+
 function start_menu() {
 	clear
 	red "============================"
@@ -435,6 +450,7 @@ function start_menu() {
 	echo "8. 安装certbot"
 	echo "9. 安装webdav服务"
 	echo "10. 安装rclone客户端"
+	echo "11. 配置备份任务 "
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -468,6 +484,9 @@ function start_menu() {
 		;;
 	"10")
 		install_webdav_client
+		;;
+	"11")
+		install_backup_cron_job
 		;;
 	"v")
 		get_latest_client_script
