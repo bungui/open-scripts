@@ -76,9 +76,13 @@ else
 fi
 
 function update_script() {
-	timestamp=$(date +%s)
 	client_path="${home_dir}/client.sh"
-	script_url="https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh?t=${timestamp}"
+	last_commit=$(curl -s https://api.github.com/repos/bungui/open-scripts/branches/dev | grep -ioE "\"sha\": \"([a-z0-9]+)\"" | head -1 | awk -F '"' '{print $4}' )
+	if [ -z "$last_commit" ]; then
+		red "获取提交ID失败"
+		exit 1
+	fi
+	script_url="https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh?commit=${last_commit}"
 	if ! wget "$script_url" -O "$client_path"; then
 		red "下载失败"
 		exit 1
