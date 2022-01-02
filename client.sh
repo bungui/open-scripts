@@ -341,18 +341,20 @@ function install_webdav_server() {
 	if [ ! -f /etc/nginx/sites-available/webdav ]; then
 		sudo cat <<-EOF >/etc/nginx/sites-available/webdav
 			server {
-				server_name example.com;
+			  server_name example.com;
 
-				root /var/www/html;
-				index index.html index.htm index.nginx-debian.html;
+			  root /var/www/html;
+			  index index.html index.htm index.nginx-debian.html;
 
-				location / {
-					proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-					proxy_set_header Host \$http_host;
-					proxy_redirect off;
-					proxy_pass http://127.0.0.1:${port};
-					client_max_body_size 20000m;
-				}
+			  location / {
+			    proxy_pass http://127.0.0.1:${port};
+			    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+			    proxy_set_header Host \$http_host;
+			    proxy_set_header X-Real-IP \$remote_addr;
+          proxy_set_header REMOTE-HOST \$remote_addr;
+			    proxy_redirect off;
+			    client_max_body_size 20000m;
+			  }
 			}
 		EOF
 		sudo ln -s /etc/nginx/sites-available/webdav /etc/nginx/sites-enabled/webdav
