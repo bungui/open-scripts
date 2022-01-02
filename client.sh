@@ -94,7 +94,7 @@ function install_github_cli() {
 			curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
 			echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
 			sudo apt update
-			sudo apt install gh
+			sudo apt install gh -y
 		fi
 	else
 		green "gh已安装，更新中"
@@ -102,7 +102,7 @@ function install_github_cli() {
 			sudo dnf update gh
 		else
 			sudo apt update
-			sudo apt install gh
+			sudo apt install gh -y
 		fi
 	fi
 }
@@ -130,11 +130,7 @@ function check_virtualenv() {
 	if [ $result -eq 1 ]; then
 		red "未安装python3-virtualenv"
 		sudo apt update
-		sudo apt install python3 python3-pip python3-virtualenv
-	fi
-	if [ ! -d .git ]; then
-		red "不是仓库根目录"
-		exit 1
+		sudo apt install python3 python3-pip python3-virtualenv -y
 	fi
 	if [ ! -d venv ]; then
 		virtualenv venv
@@ -248,6 +244,94 @@ function install_socks5_proxy() {
 	red "安装socks5服务成功"
 }
 
+# shellcheck disable=SC2120
+function install_webdav_server() {
+	# 参考：https://github.com/hacdias/webdav
+	if [ ! -f /usr/bin/webdav ]; then
+		echo "开始安装webdav服务器"
+		sudo wget https://github.com/hacdias/webdav/releases/download/v4.1.1/linux-amd64-webdav.tar.gz -O "${home_dir}/linux-amd64-webdav.tar.gz"
+		sudo mkdir -p "${home_dir}/webdav"
+		sudo tar zxvf linux-amd64-webdav.tar.gz -C "${home_dir}/webdav"
+		sudo cp "${home_dir}/webdav/webdav" /usr/bin/webdav
+	else
+		echo "已经安装webdav"
+	fi
+
+	sudo mkdir -p /opt
+
+	if [ ! -f /opt/webdav.config ]; then
+		sudo cat <<-EOF >/opt/webdav.config
+			# Server related settings
+			address: 0.0.0.0
+			port: 0
+			auth: true
+			tls: false
+			cert: cert.pem
+			key: key.pem
+			prefix: /
+			
+			# Default user settings (will be merged)
+			scope: .
+			modify: true
+			rules: []
+			
+			# CORS configuration
+			cors:
+			  enabled: true
+			  credentials: true
+			  allowed_headers:
+			    - Depth
+			  allowed_hosts:
+			    - http://localhost:8080
+			  allowed_methods:
+			    - GET
+			  exposed_headers:
+			    - Content-Length
+			    - Content-Range
+			
+			users:
+			  - username: admin
+			    password: admin
+			    scope: /a/different/path
+			  - username: encrypted
+			    password: "{bcrypt}$2y$10$zEP6oofmXFeHaeMfBNLnP.DO8m.H.Mwhd24/TOX2MWLxAExXi4qgi"
+			  - username: "{env}ENV_USERNAME"
+			    password: "{env}ENV_PASSWORD"
+			  - username: basic
+			    password: basic
+			    modify:   false
+			    rules:
+			      - regex: false
+			        allow: false
+			        path: /some/file
+			      - path: /public/access/
+			        modify: true
+		EOF
+	fi
+	red "请修改默认配置文件: /opt/webdav.config"
+	confirm -p "按任意建继续" confirm
+	sudo cat <<-EOF >/usr/lib/systemd/system/webdav.service
+		[Unit]
+		Description=WebDAV server
+		After=network.target
+		
+		[Service]
+		Type=simple
+		User=root
+		ExecStart=/usr/bin/webdav --config /opt/webdav.config
+		Restart=on-failure
+		
+		[Install]
+		WantedBy=multi-user.target
+	EOF
+
+	sudo systemctl daemon-reload
+	sudo systemctl enable webdav.service
+	sudo systemctl restart webdav.service
+	sudo journalctl -u webdav.service
+	red "安装webdav服务成功"
+}
+
 function start_menu() {
 	clear
 	red "============================"
@@ -268,6 +352,7 @@ function start_menu() {
 	echo "4. 克隆或者更新客户端仓库"
 	echo "5. 安装task_whois服务"
 	echo "6. 安装Brook socks5服务"
+	echo "7. 安装webdav服务"
 	echo "v. 更新脚本"
 	echo "0. 退出脚本"
 	read -p "请输入选项:" menuNumberInput
@@ -289,6 +374,9 @@ function start_menu() {
 		;;
 	"6")
 		install_socks5_proxy
+		;;
+	"7")
+		install_webdav_server
 		;;
 	"v")
 		update_script
