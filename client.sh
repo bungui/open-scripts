@@ -292,10 +292,14 @@ function install_webdav_server() {
 	# 参考：https://github.com/hacdias/webdav
 	if [ ! -f /usr/bin/webdav ]; then
 		echo "开始安装webdav服务器"
-		sudo wget https://github.com/hacdias/webdav/releases/download/v4.1.1/linux-amd64-webdav.tar.gz -O "${home_dir}/linux-amd64-webdav.tar.gz"
-		sudo mkdir -p "${home_dir}/webdav"
-		sudo tar zxvf linux-amd64-webdav.tar.gz -C "${home_dir}/webdav"
-		sudo cp "${home_dir}/webdav/webdav" /usr/bin/webdav
+		webdav_tar_path="${home_dir}/linux-amd64-webdav.tar.gz"
+		webdav_extract_dir="${home_dir}/webdav"
+		sudo wget https://github.com/hacdias/webdav/releases/download/v4.1.1/linux-amd64-webdav.tar.gz -O "$webdav_tar_path"
+		sudo mkdir -p "$webdav_extract_dir"
+		sudo tar zxvf "$webdav_tar_path" -C "$webdav_extract_dir"
+		sudo cp "${webdav_extract_dir}/webdav" /usr/bin/webdav
+		sudo rm "$webdav_tar_path" -f
+		sudo rm "$webdav_extract_dir" -rf
 	else
 		echo "已经安装webdav"
 	fi
