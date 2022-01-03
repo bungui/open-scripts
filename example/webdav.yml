@@ -1,0 +1,14 @@
+address: 127.0.0.1
+port: 55557
+auth: true
+tls: false
+prefix: /
+
+scope: .
+modify: true
+rules: [ ]
+
+users:
+  - username: cloud
+    password: cloud
+    scope: /webdav/cloud

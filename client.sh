@@ -301,32 +301,16 @@ function install_webdav_server() {
 		echo "已经安装webdav"
 	fi
 
-	if [ ! -f /opt/webdav.yml ]; then
+	webdav_config="/opt/webdav.yml"
+	if [ ! -f "$webdav_config" ]; then
 		sudo mkdir -p /opt
-		sudo cat <<-EOF >/opt/webdav.yml
-			address: 127.0.0.1
-			port: 55557
-			auth: true
-			tls: false
-			prefix: /
-			
-			scope: .
-			modify: true
-			rules: []
-			
-			users:
-			  - username: cloud
-			    password: cloud
-			    scope: /webdav/cloud
-		EOF
-
-		red "先手工修改默认配置文件: /opt/webdav.yml"
+		download_script_repo_file "example/webdav.yml" "$webdav_config"
+		red "先手工修改默认配置文件: $webdav_config"
 		red "注意需要保证scope的路径存在"
 		read -p "按任意建继续" confirm
 	fi
 
 	sudo mkdir -p /webdav
-
 	read -p "输入webdav端口(默认55557): " port
 	if [ -z "$port" ]; then
 		port="55557"
@@ -339,7 +323,7 @@ function install_webdav_server() {
 		[Service]
 		Type=simple
 		User=root
-		ExecStart=/usr/bin/webdav --address 127.0.0.1 --port ${port} --config /opt/webdav.yml
+		ExecStart=/usr/bin/webdav --address 127.0.0.1 --port ${port} --config $webdav_config
 		Restart=on-failure
 		
 		[Install]
@@ -429,8 +413,8 @@ function install_backup_cron_job() {
 	read -p "按任意建继续" confirm
 	if ! sudo crontab -l | grep -q "${backup_file}"; then
 		tmp_file="/tmp/crontab.tmp"
-		sudo crontab -l > "${tmp_file}"
-		echo "30 5 */1 * * /usr/bin/bash ${backup_file}" >> "${tmp_file}"
+		sudo crontab -l >"${tmp_file}"
+		echo "30 5 */1 * * /usr/bin/bash ${backup_file}" >>"${tmp_file}"
 		sudo crontab "${tmp_file}"
 		sudo rm "${tmp_file}"
 	fi
