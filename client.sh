@@ -320,9 +320,20 @@ function install_webdav_server() {
 	fi
 
 	webdav_service="/usr/lib/systemd/system/webdav.service"
-	download_script_repo_file "example/webdav.service" "$webdav_service"
-	execstart_replace="ExecStart=/usr/bin/webdav --address 127.0.0.1 --port ${port} --config $webdav_config"
-	sudo sed -i -E "s@^ExecStart=@${execstart_replace}@" "$webdav_service"
+	sudo cat > "$webdav_service" <<-EOF
+		[Unit]
+		Description=WebDAV server
+		After=network.target
+
+		[Service]
+		Type=simple
+		User=root
+		ExecStart=/usr/bin/webdav --address 127.0.0.1 --port ${port} --config $webdav_config
+		Restart=on-failure
+
+		[Install]
+		WantedBy=multi-user.target
+	EOF
 	sudo systemctl daemon-reload
 	sudo systemctl enable webdav.service
 	sudo systemctl restart webdav.service
