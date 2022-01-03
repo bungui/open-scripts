@@ -278,7 +278,7 @@ function install_certbot() {
 	fi
 	if [ ! -f /usr/bin/certbot ]; then
 		red "开始安装certbot"
-		# ubuntu 20 lts版本是预装了snap的
+		sudo apt-get install snapd -y
 		sudo snap install core
 		sudo snap refresh core
 		sudo snap install --classic certbot
