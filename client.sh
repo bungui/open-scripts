@@ -320,6 +320,7 @@ function install_webdav_server() {
 	fi
 
 	webdav_service="/usr/lib/systemd/system/webdav.service"
+	# shellcheck disable=SC2024
 	sudo cat > "$webdav_service" <<-EOF
 		[Unit]
 		Description=WebDAV server
@@ -334,6 +335,7 @@ function install_webdav_server() {
 		[Install]
 		WantedBy=multi-user.target
 	EOF
+	red "成功生成服务文件： $webdav_service"
 	sudo systemctl daemon-reload
 	sudo systemctl enable webdav.service
 	sudo systemctl restart webdav.service
@@ -366,7 +368,7 @@ function install_webdav_client() {
 		sudo rclone config
 	fi
 
-	sudo cat <<-EOF >/usr/lib/systemd/system/rclone.service
+	sudo cat >/usr/lib/systemd/system/rclone.service <<-EOF
 		[Unit]
 		Description=Rclone Mount
 		After=network-online.target
