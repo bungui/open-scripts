@@ -1,0 +1,12 @@
+[Unit]
+Description=WebDAV server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/webdav --address 127.0.0.1 --port 55557--config /opt/webdav.yml
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

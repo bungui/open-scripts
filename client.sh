@@ -288,7 +288,6 @@ function install_certbot() {
 	fi
 }
 
-# shellcheck disable=SC2120
 function install_webdav_server() {
 	# 参考：https://github.com/hacdias/webdav
 	if [ ! -f /usr/bin/webdav ]; then
@@ -315,21 +314,11 @@ function install_webdav_server() {
 	if [ -z "$port" ]; then
 		port="55557"
 	fi
-	sudo cat <<-EOF >/usr/lib/systemd/system/webdav.service
-		[Unit]
-		Description=WebDAV server
-		After=network.target
-		
-		[Service]
-		Type=simple
-		User=root
-		ExecStart=/usr/bin/webdav --address 127.0.0.1 --port ${port} --config $webdav_config
-		Restart=on-failure
-		
-		[Install]
-		WantedBy=multi-user.target
-	EOF
 
+	webdav_service="/usr/lib/systemd/system/webdav.service"
+	download_script_repo_file "example/webdav.service" "$webdav_service"
+	execstart_replace="ExecStart=/usr/bin/webdav --address 127.0.0.1 --port ${port} --config $webdav_config"
+	sudo sed -i -E "s@^ExecStart=@${execstart_replace}@" "$webdav_service"
 	sudo systemctl daemon-reload
 	sudo systemctl enable webdav.service
 	sudo systemctl restart webdav.service
@@ -337,27 +326,14 @@ function install_webdav_server() {
 	red "安装webdav服务成功"
 	red "配置文件地址：/opt/webdav.yml"
 
-	if [ ! -f /etc/nginx/sites-available/webdav ]; then
-		sudo cat <<-EOF >/etc/nginx/sites-available/webdav
-			server {
-			  server_name example.com;
-			
-			  root /var/www/html;
-			  index index.html index.htm index.nginx-debian.html;
-			
-			  location / {
-			    proxy_pass http://127.0.0.1:${port};
-			    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-			    proxy_set_header Host \$http_host;
-			    proxy_set_header X-Real-IP \$remote_addr;
-			          proxy_set_header REMOTE-HOST \$remote_addr;
-			    proxy_redirect off;
-			    client_max_body_size 20000m;
-			  }
-			}
-		EOF
-		sudo ln -s /etc/nginx/sites-available/webdav /etc/nginx/sites-enabled/webdav
-		red "成功生成默认配置：/etc/nginx/sites-available/webdav"
+	available_path="/etc/nginx/sites-available/webdav"
+	enabled_path="/etc/nginx/sites-enabled/webdav"
+	if [ ! -f "$available_path" ]; then
+		download_script_repo_file "example/nginx-webdav.conf" "$available_path"
+		local_url="http://127.0.0.1:${port}"
+		sudo sed -i -E "s@http://127.0.0.1:5557@${local_url}@" "$available_path"
+		sudo ln -s "$available_path" "$enabled_path"
+		red "成功生成默认配置：$available_path"
 		read -p "按任意建开始进行修改" confirm
 		sudo certbot --nginx
 	fi
