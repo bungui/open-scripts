@@ -152,22 +152,24 @@ function check_virtualenv() {
 	if [ ! -d venv ]; then
 		virtualenv venv
 	fi
-	echo "进入python虚拟环境"
+	red "进入python虚拟环境"
 	source venv/bin/activate
-	yellow "安装依赖包"
+	red "安装依赖包"
 	pip install --upgrade pip
 	pip install -r requirements.txt
 }
 
 function clone_client_repo() {
-	if [ -d /repo/py-aiohttp-client ]; then
-		echo "仓库已经克隆"
-		cd /repo/py-aiohttp-client
+	repo_dir="/repo/py-aiohttp-client"
+	if [ -d "$repo_dir" ]; then
+		red "仓库已经克隆，路径： $repo_dir"
+		cd "$repo_dir"
+		red "开始更新代码"
 		git pull
 		check_virtualenv
 	else
-		mkdir -p /repo
 		cd /repo
+		red "开始克隆代码到目录： $repo_dir"
 		gh repo clone brilon/py-aiohttp-client
 		cd py-aiohttp-client
 		check_virtualenv
