@@ -433,6 +433,32 @@ function clone_admin_repo() {
 	fi
 }
 
+function install_redis() {
+	if [ -f /usr/bin/redis-cli ]; then
+		red "redis已安装"
+	else
+		sudo apt update
+		sudo apt install redis -y
+	fi
+	red "当前端口情况： "
+	ss -ntl | grep --color=auto 6379
+}
+
+function install_mysql() {
+	if [ -f /usr/bin/mysql ]; then
+		red "已安装mariadb-server"
+	else
+		sudo apt update
+		sudo apt install mariadb-server -y
+	fi
+	read -p "是否进行mysql安全配置[y/N]: " confirm
+	if [ "$confirm" = 'y' ] || [ "$confirm" = 'Y' ]; then
+		mysql_secure_installation
+	fi
+	red "当前端口情况： "
+	ss -ntl | grep --color=auto 3306
+}
+
 function start_menu() {
 	clear
 	red "============================"
@@ -459,6 +485,8 @@ function start_menu() {
 	echo "10. 安装rclone客户端"
 	echo "11. 配置备份任务 "
 	echo "12. 克隆admin仓库 "
+	echo "13. 安装redis "
+	echo "14. 安装mysql "
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -498,6 +526,12 @@ function start_menu() {
 		;;
 	"12")
 		clone_admin_repo
+		;;
+	"13")
+		install_redis
+		;;
+	"14")
+		install_mysql
 		;;
 	"v")
 		get_latest_client_script
