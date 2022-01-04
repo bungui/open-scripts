@@ -321,17 +321,17 @@ function install_webdav_server() {
 
 	webdav_service="/usr/lib/systemd/system/webdav.service"
 	# shellcheck disable=SC2024
-	sudo cat > "$webdav_service" <<-EOF
+	sudo cat >"$webdav_service" <<-EOF
 		[Unit]
 		Description=WebDAV server
 		After=network.target
-
+		
 		[Service]
 		Type=simple
 		User=root
 		ExecStart=/usr/bin/webdav --address 127.0.0.1 --port ${port} --config $webdav_config
 		Restart=on-failure
-
+		
 		[Install]
 		WantedBy=multi-user.target
 	EOF
@@ -414,6 +414,23 @@ function install_backup_cron_job() {
 	echo "配置备份定时任务成功"
 }
 
+function clone_admin_repo() {
+	repo_dir="/repo/py-aiohttp-admin"
+	if [ -d "$repo_dir" ]; then
+		red "仓库已经克隆，路径： $repo_dir"
+		cd "$repo_dir"
+		red "开始更新代码"
+		git pull
+		check_virtualenv
+	else
+		red "仓库目录不存在，开始克隆"
+		cd /repo
+		gh repo clone brilon/py-aiohttp-admin
+		cd py-aiohttp-admin
+		check_virtualenv
+	fi
+}
+
 function start_menu() {
 	clear
 	red "============================"
@@ -439,6 +456,7 @@ function start_menu() {
 	echo "9. 安装webdav服务"
 	echo "10. 安装rclone客户端"
 	echo "11. 配置备份任务 "
+	echo "12. 克隆admin仓库 "
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -475,6 +493,9 @@ function start_menu() {
 		;;
 	"11")
 		install_backup_cron_job
+		;;
+	"12")
+		clone_admin_repo
 		;;
 	"v")
 		get_latest_client_script
