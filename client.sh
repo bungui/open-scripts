@@ -492,7 +492,7 @@ function install_admin_service() {
 	enabled_path="/etc/nginx/sites-enabled/aiohttp-admin"
 
 	if [ ! -f "$available_path" ]; then
-		sudo cat > "$available_path" <<-EOF
+		sudo cat >"$available_path" <<-EOF
 			server {
 				server_name example.com;
 				location / {
@@ -546,6 +546,7 @@ function start_menu() {
 	echo "12. 克隆admin仓库 "
 	echo "13. 安装redis "
 	echo "14. 安装mysql "
+	echo "15. 安装admin服务 "
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -591,6 +592,9 @@ function start_menu() {
 		;;
 	"14")
 		install_mysql
+		;;
+	"15")
+		install_admin_service
 		;;
 	"v")
 		get_latest_client_script
