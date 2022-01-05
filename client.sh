@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# 出错时，自动退出
-set -e
+# 下面不生效，注释掉
+# set -e
 
 # 参考： https://github.com/Misaka-blog/MisakaLinuxToolbox
 # 当前代码地址： https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh
