@@ -521,8 +521,6 @@ function install_admin_service() {
 		sudo certbot --nginx
 	fi
 
-	red "检查端口: "
-	ss -ntl | grep --color=auto 8080
 	red "检查日志"
 	sudo journalctl -f -u aiohttp-admin.service
 }
