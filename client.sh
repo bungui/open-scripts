@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# 打印执行的命令行；出错时，自动退出
-set -x -e
+# 出错时，自动退出
+set -e
 
 # 参考： https://github.com/Misaka-blog/MisakaLinuxToolbox
 # 当前代码地址： https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh
@@ -509,11 +509,11 @@ function install_admin_service() {
 			}
 		EOF
 
-		red "修改默认的配置，然后按任意键继续"
-		read confirm
+		red "修改默认的配置: $available_path"
+		read -p "按任意键继续" confirm
 		sudo ln -s "$available_path" "$enabled_path"
 		sudo nginx -s reload
-		sudo cerbot --nginx
+		sudo certbot --nginx
 	fi
 
 	red "检查端口: "
