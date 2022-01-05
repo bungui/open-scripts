@@ -180,13 +180,13 @@ function clone_client_repo() {
 
 }
 
-function install_task_whois_service() {
+function install_client_service() {
 	cd /repo/py-aiohttp-client
-	cp deploy/task_whois.service /usr/lib/systemd/system/task_whois.service
+	cp deploy/client.service /usr/lib/systemd/system/aiohttp-client.service
 	sudo systemctl daemon-reload
-	sudo systemctl enable task_whois.service
-	sudo systemctl start task_whois.service
-	sudo journalctl -f -u task_whois.service
+	sudo systemctl enable aiohttp-client.service
+	sudo systemctl start aiohttp-client.service
+	sudo journalctl -f -u aiohttp-client.service
 }
 
 function security_enhance() {
@@ -556,7 +556,7 @@ function start_menu() {
 	echo "2. 安装github命令行"
 	echo "3. 通过gh登陆github"
 	echo "4. 克隆或者更新客户端仓库"
-	echo "5. 安装task_whois服务"
+	echo "5. 安装client服务"
 	echo "6. 安装Brook socks5服务"
 	echo "7. 安装nginx"
 	echo "8. 安装certbot"
@@ -585,7 +585,7 @@ function start_menu() {
 		clone_client_repo
 		;;
 	"5")
-		install_task_whois_service
+		install_client_service
 		;;
 	"6")
 		install_socks5_proxy
