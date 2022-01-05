@@ -513,6 +513,11 @@ function install_admin_service() {
 		read -p "按任意键继续" confirm
 		sudo ln -s "$available_path" "$enabled_path"
 		sudo nginx -s reload
+
+	fi
+
+	read -p "是否申请SSL证书[y/N]" confirm
+	if [ "$confirm" = 'y' ] || [ "$confirm" = 'Y' ]; then
 		sudo certbot --nginx
 	fi
 
@@ -560,7 +565,7 @@ function start_menu() {
 	echo "9. 安装webdav服务"
 	echo "10. 安装rclone客户端"
 	echo "11. 配置备份任务 "
-	echo "12. 克隆admin仓库 "
+	echo "12. 克隆或更新admin仓库 "
 	echo "13. 安装redis "
 	echo "14. 安装mysql "
 	echo "15. 安装admin服务 "
