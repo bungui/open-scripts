@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# 打印执行的命令行；出错时，自动退出
+set -x -e
+
 # 参考： https://github.com/Misaka-blog/MisakaLinuxToolbox
 # 当前代码地址： https://raw.githubusercontent.com/bungui/open-scripts/dev/client.sh
 # 一些全局变量
@@ -486,7 +489,6 @@ function install_admin_service() {
 	sudo systemctl daemon-reload
 	sudo systemctl enable aiohttp-admin.service
 	sudo systemctl restart aiohttp-admin.service
-
 
 	available_path="/etc/nginx/sites-available/aiohttp-admin"
 	enabled_path="/etc/nginx/sites-enabled/aiohttp-admin"
