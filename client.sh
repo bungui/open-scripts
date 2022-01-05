@@ -518,9 +518,21 @@ function install_admin_service() {
 
 	red "检查端口: "
 	ss -ntl | grep --color=auto 8080
-	read confirm
 	red "检查日志"
 	sudo journalctl -f -u aiohttp-admin.service
+}
+
+function disable_ipv6() {
+	conf_file="/etc/sysctl.conf"
+	# shellcheck disable=SC2002
+	if ! cat "$conf_file" | grep -q -i "net.ipv6.conf.all.disable_ipv6=1"; then
+		sudo echo "net.ipv6.conf.all.disable_ipv6=1" >>"$conf_file"
+		sudo sysctl -p "$conf_file"
+		red "成功禁止ipv6"
+	else
+		red "已禁止ipv6"
+	fi
+	sudo ifconfig
 }
 
 function start_menu() {
@@ -552,6 +564,7 @@ function start_menu() {
 	echo "13. 安装redis "
 	echo "14. 安装mysql "
 	echo "15. 安装admin服务 "
+	echo "16. 禁止ipv6 "
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -600,6 +613,9 @@ function start_menu() {
 		;;
 	"15")
 		install_admin_service
+		;;
+	"16")
+		disable_ipv6
 		;;
 	"v")
 		get_latest_client_script
