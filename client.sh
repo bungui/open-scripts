@@ -486,7 +486,7 @@ function install_admin_service() {
 	sudo systemctl daemon-reload
 	sudo systemctl enable aiohttp-admin.service
 	sudo systemctl restart aiohttp-admin.service
-	sudo journalctl -f -u aiohttp-admin.service
+
 
 	available_path="/etc/nginx/sites-available/aiohttp-admin"
 	enabled_path="/etc/nginx/sites-enabled/aiohttp-admin"
@@ -516,6 +516,9 @@ function install_admin_service() {
 
 	red "检查端口: "
 	ss -ntl | grep --color=auto 8080
+	read confirm
+	red "检查日志"
+	sudo journalctl -f -u aiohttp-admin.service
 }
 
 function start_menu() {
