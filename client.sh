@@ -459,6 +459,65 @@ function install_mysql() {
 	ss -ntl | grep --color=auto 3306
 }
 
+function install_admin_service() {
+	admin_service="/usr/lib/systemd/system/aiohttp-admin.service"
+	repo_dir="/repo/py-aiohttp-admin"
+	sudo cat >"$admin_service" <<-EOF
+		[Unit]
+		Description=aiohttp-admin
+		After=network.target
+		After=mysqld.service
+		Wants=network.target
+		
+		[Service]
+		WorkingDirectory=${repo_dir}
+		ExecStart=${repo_dir}/venv/bin/python ${repo_dir}/main.py
+		Restart=on-abnormal
+		RestartSec=5s
+		KillMode=mixed
+		
+		StandardOutput=null
+		StandardError=syslog
+		
+		[Install]
+		WantedBy=multi-user.target
+	EOF
+
+	sudo systemctl daemon-reload
+	sudo systemctl enable aiohttp-admin.service
+	sudo systemctl restart aiohttp-admin.service
+	sudo journalctl -f -u aiohttp-admin.service
+
+	available_path="/etc/nginx/sites-available/aiohttp-admin"
+	enabled_path="/etc/nginx/sites-enabled/aiohttp-admin"
+
+	if [ ! -f "$available_path" ]; then
+		sudo cat > "$available_path" <<-EOF
+			server {
+				server_name example.com;
+				location / {
+					proxy_pass http://127.0.0.1:8080;
+					proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+					proxy_set_header Host \$http_host;
+					proxy_set_header X-Real-IP \$remote_addr;
+					proxy_set_header REMOTE-HOST \$remote_addr;
+					proxy_redirect off;
+					client_max_body_size 20000m;
+				}
+			}
+		EOF
+
+		red "修改默认的配置，然后按任意键继续"
+		read confirm
+		sudo ln -s "$available_path" "$enabled_path"
+		sudo nginx -s reload
+		sudo cerbot --nginx
+	fi
+
+	red "检查端口: "
+	ss -ntl | grep --color=auto 8080
+}
+
 function start_menu() {
 	clear
 	red "============================"
