@@ -505,6 +505,9 @@ function install_admin_service() {
 					proxy_set_header REMOTE-HOST \$remote_addr;
 					proxy_redirect off;
 					client_max_body_size 20000m;
+					proxy_read_timeout 300;
+					proxy_connect_timeout 300;
+					proxy_send_timeout 300;
 				}
 			}
 		EOF
