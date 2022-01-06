@@ -396,6 +396,11 @@ function install_webdav_client() {
 }
 
 function install_backup_cron_job() {
+	if [ ! -f /usr/bin/zip ]; then
+		red "未安装zip"
+		sudo apt update
+		sudo apt install zip -y
+	fi
 	backup_file="/repo/backup.sh"
 	if [ ! -f "${backup_file}" ]; then
 		download_script_repo_file "example/backup.sh" "${backup_file}"
@@ -412,7 +417,7 @@ function install_backup_cron_job() {
 	if ! sudo crontab -l | grep -q "${backup_file}"; then
 		tmp_file="/tmp/crontab.tmp"
 		sudo crontab -l >"${tmp_file}"
-		echo "30 5 */1 * * /usr/bin/bash ${backup_file}" >>"${tmp_file}"
+		echo "30 5 */1 * * /bin/bash ${backup_file}" >>"${tmp_file}"
 		sudo crontab "${tmp_file}"
 		sudo rm "${tmp_file}"
 	fi
