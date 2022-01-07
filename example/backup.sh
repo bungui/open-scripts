@@ -48,6 +48,7 @@ if [ -d "${data_dir}" ]; then
 	echo "开始备份data目录: $data_dir"
 	sudo zip -r -9 "$zip_file" "$data_dir"
 	result=$?
+	# 避免压缩失败后，自动删除了数据，不可挽回
 	if [ "$result" -eq 0 ]; then
 		echo "备份成功，文件： ${zip_file}"
 		echo "开始清理文件"
