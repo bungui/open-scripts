@@ -41,5 +41,19 @@ sudo rm "${redis_zip_file}" -f
 sudo rm "${redis_tmp_file}" -f
 echo "备份redis成功"
 
+# 备份data目录
+data_dir="/repo/py-aiohttp-admin/data"
+tmp_dir="/tmp/data"
+zip_file="${backup_dir}/admin-data-${date_str}.zip"
+if [ -d "${data_dir}" ]; then
+	echo "开始备份data目录: $data_dir"
+	sudo rm $tmp_dir/* -f
+	sudo mv $data_dir/* $tmp_dir/
+	sudo zip -r -9 "$zip_file" $tmp_dir/*
+	sudo rm $tmp_dir/* -f
+	echo "备份成功，文件： ${zip_file}"
+fi
+
+
 # 删除30天前的文件
 # delete_files_n_days_ago "${backup_dir}" "+30"
