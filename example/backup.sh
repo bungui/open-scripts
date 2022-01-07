@@ -54,9 +54,7 @@ if [ -d "${data_dir}" ]; then
 		echo "开始清理文件"
 		sudo rm "$data_dir"/* -f
 	fi
-
 fi
 
-
-# 删除30天前的文件
+# 下面函数删除有问题，先注释
 # delete_files_n_days_ago "${backup_dir}" "+30"
