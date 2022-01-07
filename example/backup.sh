@@ -43,14 +43,17 @@ echo "备份redis成功"
 
 # 备份data目录
 data_dir="/repo/py-aiohttp-admin/data"
-tmp_dir="/tmp/data"
 zip_file="${backup_dir}/admin-data-${date_str}.zip"
 if [ -d "${data_dir}" ]; then
 	echo "开始备份data目录: $data_dir"
-	sudo rm $tmp_dir/* -f
-	sudo mv $data_dir/* $tmp_dir/
-	sudo zip -r -9 "$zip_file" "$tmp_dir"
-	echo "备份成功，文件： ${zip_file}"
+	sudo zip -r -9 "$zip_file" "$data_dir"
+	result=$?
+	if [ "$result" -eq 0 ]; then
+		echo "备份成功，文件： ${zip_file}"
+		echo "开始清理文件"
+		sudo rm "$data_dir"/* -f
+	fi
+
 fi
 
 
