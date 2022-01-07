@@ -49,8 +49,7 @@ if [ -d "${data_dir}" ]; then
 	echo "开始备份data目录: $data_dir"
 	sudo rm $tmp_dir/* -f
 	sudo mv $data_dir/* $tmp_dir/
-	sudo zip -r -9 "$zip_file" $tmp_dir/*
-	sudo rm $tmp_dir/* -f
+	sudo zip -r -9 "$zip_file" "$tmp_dir"
 	echo "备份成功，文件： ${zip_file}"
 fi
 
