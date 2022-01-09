@@ -605,6 +605,7 @@ function install_tor() {
 	red "$message"
 }
 
+# 可以把socks5代理变成http代理，并且对referer, cookie进行匿名化
 function install_privoxy() {
 	if ! dpkg -s privoxy >/dev/null 2>&1; then
 		red "未安装privoxy，开始安葬"
