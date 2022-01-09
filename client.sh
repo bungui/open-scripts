@@ -584,10 +584,9 @@ function install_tor() {
 		sudo echo HashedControlPassword $(tor --hash-password "$tor_password" | tail -n 1) >>/etc/tor/torrc
 	fi
 	sudo systemctl restart tor
-	message="AUTHENTICATE "
-	message+="\"$tor_password\""
-	red "测试tor控制的认证： $message"
-	echo -e "$message" | nc 127.0.0.1 "$tor_port"
+	message="AUTHENTICATE \"$tor_password\" | nc 127.0.0.1 \"$tor_port\""
+	red "手工输入命令测试："
+	red "$message"
 }
 
 function change_hostname() {
