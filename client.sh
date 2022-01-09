@@ -579,7 +579,7 @@ function install_tor() {
 		red "写入控制端口： $tor_port"
 		sudo echo "ControlPort $tor_port" >> /etc/tor/torrc
 	fi
-	if ! grep -q -i -E "^HashedControlPassword " /etc/tor/torrc;; then
+	if ! grep -q -i -E "^HashedControlPassword " /etc/tor/torrc; then
 		red "写入控制密码： $tor_password"
 		sudo echo HashedControlPassword $(tor --hash-password "$tor_password" | tail -n 1) >>/etc/tor/torrc
 	fi
