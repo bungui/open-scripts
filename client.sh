@@ -479,6 +479,7 @@ function install_admin_service() {
 		Description=aiohttp-admin
 		After=network.target
 		After=mysqld.service
+		After=redis.service
 		Wants=network.target
 		
 		[Service]
