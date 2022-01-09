@@ -95,6 +95,10 @@ function download_script_repo_file() {
 	red "下载成功，文件路径： ${dest_path}"
 }
 
+function get_public_ip() {
+	curl -s myip.ipip.net
+}
+
 function get_latest_client_script() {
 	client_path="/repo/client.sh"
 	download_script_repo_file "client.sh" "$client_path"
@@ -546,6 +550,34 @@ function disable_ipv6() {
 	sudo ifconfig
 }
 
+function install_tor() {
+	tor_path="/usr/sbin/tor"
+	if [ ! -f "$tor_path" ]; then
+		red "未安装tor，开始安葬"
+		sudo apt install tor -y
+	else
+		red "已安装tor"
+	fi
+	tor_version=$(tor --version)
+	echo "tor版本： $tor_version"
+}
+
+function change_hostname() {
+	cur_hostname=$(hostname)
+	red "当前主机名: $cur_hostname"
+	read -p "输入新的主机名: " new_hostname
+	read -p "新的主机名为： ${new_hostname}, 是否确认[y/N] " confirm
+	if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
+		sudo echo "$new_hostname" >/etc/hostname
+		sed -i -E "/${cur_hostname}\$/d" /etc/hosts
+		sudo echo "127.0.0.1 $new_hostname" >>/etc/hosts
+	fi
+	read -p "是否重启主机 [y/N] " confirm
+	if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
+		sudo reboot
+	fi
+}
+
 function start_menu() {
 	clear
 	red "============================"
@@ -576,6 +608,7 @@ function start_menu() {
 	echo "14. 安装mysql "
 	echo "15. 安装admin服务 "
 	echo "16. 禁止ipv6 "
+	echo "17. 修改主机名 "
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -627,6 +660,9 @@ function start_menu() {
 		;;
 	"16")
 		disable_ipv6
+		;;
+	"17")
+		change_hostname
 		;;
 	"v")
 		get_latest_client_script
