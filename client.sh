@@ -605,6 +605,15 @@ function install_tor() {
 	red "$message"
 }
 
+# 手工切换tor ip
+function change_tor_ip_manually() {
+	now_ip=$(torify curl http://api.ipify.org)
+	red "切换前的IP： $now_ip"
+	echo -e 'AUTHENTICATE "123456"\r\nsignal NEWNYM\r\nQUIT' | nc 127.0.0.1 9051
+	now_ip=$(torify curl http://api.ipify.org)
+	red "切换后的IP： $now_ip"
+}
+
 # 可以把socks5代理变成http代理，并且对referer, cookie进行匿名化
 function install_privoxy() {
 	if ! dpkg -s privoxy >/dev/null 2>&1; then
@@ -655,7 +664,8 @@ function start_menu() {
 	echo "16. 禁止ipv6 "
 	echo "17. 修改主机名 "
 	echo "18. 安装tor服务 "
-	echo "19. 安装privoxy服务 "
+	echo "19. 切换tor当前的代理ip "
+	echo "20. 安装privoxy服务 "
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -715,6 +725,9 @@ function start_menu() {
 		install_tor
 		;;
 	"19")
+		change_tor_ip_manually
+		;;
+	"20")
 		install_privoxy
 		;;
 	"v")
