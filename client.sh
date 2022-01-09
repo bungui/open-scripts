@@ -551,20 +551,20 @@ function disable_ipv6() {
 }
 
 function install_tor() {
-	tor_path="/usr/sbin/tor"
-	nc_path="/bin/nc"
-	if [ ! -f "$tor_path" ]; then
+	if ! dpkg -s tor > /dev/null 2>&1; then
 		red "未安装tor，开始安葬"
 		sudo apt install tor -y
 	else
 		red "已安装tor"
 	fi
 	tor_version=$(tor --version)
-	echo "tor版本： $tor_version"
+	red "tor版本： $tor_version"
 
-	if ! dpkg -s netcat; then
+	if ! dpkg -s netcat > /dev/null 2>&1; then
 		red "未安装netcat，开始安装"
 		sudo apt install netcat -y
+	else
+		red "已安装netcat"
 	fi
 
 	read -p "tor控制端口（默认9051）: " tor_port
@@ -575,11 +575,11 @@ function install_tor() {
 	if [ -z "$tor_password" ]; then
 		tor_password="123456"
 	fi
-	if ! grep -q -i -E "^ControlPort "; then
+	if ! grep -q -i -E "^ControlPort " /etc/tor/torrc; then
 		red "写入控制端口： $tor_port"
-		sudo echo "ControlPort $tor_port" >>/etc/tor/torrc
+		sudo echo "ControlPort $tor_port" >> /etc/tor/torrc
 	fi
-	if ! grep -q -i -E "^HashedControlPassword "; then
+	if ! grep -q -i -E "^HashedControlPassword " /etc/tor/torrc;; then
 		red "写入控制密码： $tor_password"
 		sudo echo HashedControlPassword $(tor --hash-password "$tor_password" | tail -n 1) >>/etc/tor/torrc
 	fi
