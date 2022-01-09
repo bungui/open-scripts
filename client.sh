@@ -562,7 +562,7 @@ function install_tor() {
 	tor_version=$(tor --version)
 	echo "tor版本： $tor_version"
 
-	if ! dpkg -s netcat ; then
+	if ! dpkg -s netcat; then
 		red "未安装netcat，开始安装"
 		sudo apt install netcat -y
 	fi
@@ -575,8 +575,8 @@ function install_tor() {
 	if [ -z "$tor_password" ]; then
 		tor_password="123456"
 	fi
-	sudo echo "ControlPort $tor_port" >> /etc/tor/torrc
-	sudo echo HashedControlPassword $(tor --hash-password "$tor_password" | tail -n 1) >> /etc/tor/torrc
+	sudo echo "ControlPort $tor_port" >>/etc/tor/torrc
+	sudo echo HashedControlPassword $(tor --hash-password "$tor_password" | tail -n 1) >>/etc/tor/torrc
 	sudo systemctl restart tor
 	red "测试tor控制的认证："
 	message="AUTHENTICATE "
@@ -631,6 +631,7 @@ function start_menu() {
 	echo "15. 安装admin服务 "
 	echo "16. 禁止ipv6 "
 	echo "17. 修改主机名 "
+	echo "18. 安装tor服务 "
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -685,6 +686,9 @@ function start_menu() {
 		;;
 	"17")
 		change_hostname
+		;;
+	"18")
+		install_tor
 		;;
 	"v")
 		get_latest_client_script
