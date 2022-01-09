@@ -550,8 +550,24 @@ function disable_ipv6() {
 	sudo ifconfig
 }
 
+function change_hostname() {
+	cur_hostname=$(hostname)
+	red "当前主机名: $cur_hostname"
+	read -p "输入新的主机名: " new_hostname
+	read -p "新的主机名为： ${new_hostname}, 是否确认[y/N] " confirm
+	if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
+		sudo echo "$new_hostname" >/etc/hostname
+		sed -i -E "/${cur_hostname}\$/d" /etc/hosts
+		sudo echo "127.0.0.1 $new_hostname" >>/etc/hosts
+	fi
+	read -p "是否重启主机 [y/N] " confirm
+	if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
+		sudo reboot
+	fi
+}
+
 function install_tor() {
-	if ! dpkg -s tor > /dev/null 2>&1; then
+	if ! dpkg -s tor >/dev/null 2>&1; then
 		red "未安装tor，开始安葬"
 		sudo apt install tor -y
 	else
@@ -560,7 +576,7 @@ function install_tor() {
 	tor_version=$(tor --version)
 	red "tor版本： $tor_version"
 
-	if ! dpkg -s netcat > /dev/null 2>&1; then
+	if ! dpkg -s netcat >/dev/null 2>&1; then
 		red "未安装netcat，开始安装"
 		sudo apt install netcat -y
 	else
@@ -577,7 +593,7 @@ function install_tor() {
 	fi
 	if ! grep -q -i -E "^ControlPort " /etc/tor/torrc; then
 		red "写入控制端口： $tor_port"
-		sudo echo "ControlPort $tor_port" >> /etc/tor/torrc
+		sudo echo "ControlPort $tor_port" >>/etc/tor/torrc
 	fi
 	if ! grep -q -i -E "^HashedControlPassword " /etc/tor/torrc; then
 		red "写入控制密码： $tor_password"
@@ -589,20 +605,21 @@ function install_tor() {
 	red "$message"
 }
 
-function change_hostname() {
-	cur_hostname=$(hostname)
-	red "当前主机名: $cur_hostname"
-	read -p "输入新的主机名: " new_hostname
-	read -p "新的主机名为： ${new_hostname}, 是否确认[y/N] " confirm
-	if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
-		sudo echo "$new_hostname" >/etc/hostname
-		sed -i -E "/${cur_hostname}\$/d" /etc/hosts
-		sudo echo "127.0.0.1 $new_hostname" >>/etc/hosts
+function install_privoxy() {
+	if ! dpkg -s privoxy >/dev/null 2>&1; then
+		red "未安装privoxy，开始安葬"
+		sudo apt install privoxy -y
+	else
+		red "已安装privoxy"
 	fi
-	read -p "是否重启主机 [y/N] " confirm
-	if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
-		sudo reboot
+	privoxy_config="/etc/privoxy/config"
+	if ! grep -q -i -E "^forward-socks5t " "$privoxy_config"; then
+		sudo echo "forward-socks5t / 127.0.0.1:9050 ." >>"$privoxy_config"
 	fi
+	sudo systemctl enable privoxy
+	sudo systemctl start privoxy
+	red "测试privoxy是否生效："
+	curl -x 127.0.0.1:8118 http://api.ipify.org
 }
 
 function start_menu() {
@@ -637,6 +654,7 @@ function start_menu() {
 	echo "16. 禁止ipv6 "
 	echo "17. 修改主机名 "
 	echo "18. 安装tor服务 "
+	echo "19. 安装privoxy服务 "
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -694,6 +712,9 @@ function start_menu() {
 		;;
 	"18")
 		install_tor
+		;;
+	"19")
+		install_privoxy
 		;;
 	"v")
 		get_latest_client_script
