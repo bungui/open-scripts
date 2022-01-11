@@ -736,8 +736,8 @@ function install_single_tor() {
 		Environment=CONFIGFILE=/etc/privoxy${privoxy_port}/config
 		Type=forking
 		PIDFile=/run/privoxy${privoxy_port}.pid
-		ExecStart=/usr/sbin/privoxy --pidfile $PIDFILE --user $OWNER $CONFIGFILE
-		ExecStopPost=/bin/rm -f $PIDFILE
+		ExecStart=/usr/sbin/privoxy --pidfile \$PIDFILE --user \$OWNER \$CONFIGFILE
+		ExecStopPost=/bin/rm -f \$PIDFILE
 		SuccessExitStatus=15
 		
 		[Install]
