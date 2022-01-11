@@ -597,8 +597,8 @@ function install_tor() {
 		sudo echo "ControlPort $tor_port" >>/etc/tor/torrc
 	fi
 	if ! grep -q -i -E "^ExitNodes " /etc/tor/torrc; then
-		sudo echo "ExitNodes {us}" >> /etc/tor/torrc
-		sudo echo "StrictNodes 1" >> /etc/tor/torrc
+		sudo echo "ExitNodes {us}" >>/etc/tor/torrc
+		sudo echo "StrictNodes 1" >>/etc/tor/torrc
 	fi
 
 	if ! grep -q -i -E "^HashedControlPassword " /etc/tor/torrc; then
@@ -638,6 +638,126 @@ function install_privoxy() {
 	curl -x 127.0.0.1:8118 http://api.ipify.org
 }
 
+function install_single_tor() {
+
+	tor_socks_port=$1
+	tor_control_port=$2
+	privoxy_port=$3
+	red "socks port:${tor_socks_port}, control port: ${tor_control_port}, privoxy port=${privoxy_port}"
+
+	tor_bin_dir="/var/lib/tor${tor_socks_port}"
+	tor_config_file="/etc/tor/torrc${tor_socks_port}"
+	tor_service_name="tor${tor_socks_port}.service"
+	tor_service="/usr/lib/systemd/system/${tor_service_name}"
+
+	if ! dpkg -s tor >/dev/null 2>&1; then
+		red "未安装tor"
+		sudo apt update
+		sudo apt install tor -y
+	fi
+
+	if [ ! -d "$tor_bin_dir" ]; then
+		cp -r /var/lib/tor "$tor_bin_dir"
+		red "拷贝目录成功: $tor_bin_dir"
+	else
+		red "目录已存在: $tor_bin_dir"
+	fi
+
+	# 每次都重新创建
+	sudo cat >"$tor_config_file" <<-EOF
+		SocksPort $tor_socks_port
+		ControlPort $tor_control_port
+		HashedControlPassword 16:78B3D69FE4335BAD60D5DF6BA25F8DF2B755DD9AAD222C42158185230F
+		StrictNodes 1
+		ExitNodes {US}
+		DataDirectory /var/lib/tor${tor_socks_port}
+	EOF
+	red "写入配置文件： $tor_config_file"
+
+	sudo cat >"$tor_service" <<-EOF
+		[Unit]
+		Description=tor${tor_socks_port}
+		After=network.target
+		Wants=network.target
+		
+		[Service]
+		WorkingDirectory=/var/lib/tor${tor_socks_port}
+		ExecStart=/usr/sbin/tor -f ${tor_config_file}
+		Restart=on-abnormal
+		RestartSec=5s
+		KillMode=mixed
+		
+		StandardOutput=null
+		StandardError=syslog
+		
+		[Install]
+		WantedBy=multi-user.target
+	EOF
+	red "写入服务文件: $tor_service"
+
+	sudo systemctl daemon-reload
+	sudo systemctl enable "${tor_service_name}"
+	sudo systemctl restart "${tor_service_name}"
+	red "重启了服务： $tor_service_name"
+
+	red "验证socks接口： 127.0.0.1:$tor_socks_port"
+	curl --proxy "socks5h://localhost:$tor_socks_port" http://ipinfo.io/ip
+
+	if ! dpkg -s privoxy >/dev/null 2>&1; then
+		red "未安装privoxy"
+		sudo apt update
+		sudo apt install privoxy -y
+	fi
+
+	privoxy_config_dir="/etc/privoxy${privoxy_port}"
+	if [ ! -d "$privoxy_config_dir" ]; then
+		sudo cp -a /etc/privoxy "$privoxy_config_dir"
+	fi
+
+	sudo sed -i -E '/^forward-socks5t /d' "${privoxy_config_dir}/config"
+	sudo echo "forward-socks5t / 127.0.0.1:${tor_socks_port} ." >>"${privoxy_config_dir}/config"
+	sudo sed -i -E '/^listen-address  127.0.0.1:8118/d' "${privoxy_config_dir}/config"
+	sudo echo "listen-address  127.0.0.1:${privoxy_port}" >>"${privoxy_config_dir}/config"
+
+	privoxy_service_name="privoxy${privoxy_port}.service"
+	privoxy_service="/usr/lib/systemd/system/${privoxy_service_name}"
+	cat >"${privoxy_service}" <<-EOF
+		[Unit]
+		Description=Privoxy ${privoxy_port}
+		After=network.target
+		
+		[Service]
+		Environment=PIDFILE=/run/privoxy${privoxy_port}.pid
+		Environment=OWNER=privoxy
+		Environment=CONFIGFILE=/etc/privoxy/config${privoxy_port}
+		Type=forking
+		PIDFile=/run/privoxy${privoxy_port}.pid
+		ExecStart=/usr/sbin/privoxy --pidfile $PIDFILE --user $OWNER $CONFIGFILE
+		ExecStopPost=/bin/rm -f $PIDFILE
+		SuccessExitStatus=15
+		
+		[Install]
+		WantedBy=multi-user.target
+	EOF
+
+	sudo systemctl daemon-reload
+	sudo systemctl enable "${privoxy_service_name}"
+	sudo systemctl restart "${privoxy_service_name}"
+	red "重启了服务： $privoxy_service_name"
+
+	red "测试privoxy http代理端口： ${privoxy_port}"
+	curl --proxy "http://127.0.0.1:${privoxy_port}" http://ipinfo.io/ip
+}
+
+# 安装多个tor实例
+function install_multiple_tor() {
+	install_single_tor "9060" "9061" "9062"
+	install_single_tor "9070" "9071" "9072"
+	install_single_tor "9080" "9081" "9082"
+	install_single_tor "9090" "9091" "9092"
+	install_single_tor "9100" "9101" "9102"
+}
+
 function start_menu() {
 	clear
 	red "============================"
@@ -669,9 +789,10 @@ function start_menu() {
 	echo "15. 安装admin服务 "
 	echo "16. 禁止ipv6 "
 	echo "17. 修改主机名 "
-	echo "18. 安装tor服务 "
+	echo "18. 安装默认tor服务 "
 	echo "19. 切换tor当前的代理ip "
-	echo "20. 安装privoxy服务 "
+	echo "20. 安装默认privoxy服务 "
+	echo "21. 安装多个tor实例"
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -735,6 +856,9 @@ function start_menu() {
 		;;
 	"20")
 		install_privoxy
+		;;
+	"21")
+		install_multiple_tor
 		;;
 	"v")
 		get_latest_client_script
