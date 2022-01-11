@@ -701,7 +701,7 @@ function install_single_tor() {
 	red "重启了服务： $tor_service_name"
 
 	red "验证socks接口： 127.0.0.1:$tor_socks_port"
-	curl --proxy "socks5h://localhost:$tor_socks_port" http://ipinfo.io/ip
+	curl --proxy "socks5h://localhost:$tor_socks_port" http://ipinfo.io/ip ; echo
 
 	if ! dpkg -s privoxy >/dev/null 2>&1; then
 		red "未安装privoxy"
@@ -710,17 +710,21 @@ function install_single_tor() {
 	fi
 
 	privoxy_config_dir="/etc/privoxy${privoxy_port}"
+	red "privoxy配置目录： ${privoxy_config_dir}"
 	if [ ! -d "$privoxy_config_dir" ]; then
 		sudo cp -a /etc/privoxy "$privoxy_config_dir"
 	fi
 
-	sudo sed -i -E '/^forward-socks5t /d' "${privoxy_config_dir}/config"
-	sudo echo "forward-socks5t / 127.0.0.1:${tor_socks_port} ." >>"${privoxy_config_dir}/config"
-	sudo sed -i -E '/^listen-address  127.0.0.1:8118/d' "${privoxy_config_dir}/config"
-	sudo echo "listen-address  127.0.0.1:${privoxy_port}" >>"${privoxy_config_dir}/config"
+	privoxy_config_file="${privoxy_config_dir}/config"
+	red "privoxy配置文件： ${privoxy_config_file}"
+	sudo sed -i -E '/^forward-socks5t /d' "${privoxy_config_file}"
+	sudo echo "forward-socks5t / 127.0.0.1:${tor_socks_port} ." >>"${privoxy_config_file}"
+	sudo sed -i -E '/^listen-address  127.0.0.1:8118/d' "${privoxy_config_file}"
+	sudo echo "listen-address  127.0.0.1:${privoxy_port}" >>"${privoxy_config_file}"
 
 	privoxy_service_name="privoxy${privoxy_port}.service"
 	privoxy_service="/usr/lib/systemd/system/${privoxy_service_name}"
+	red "privoxy服务： ${privoxy_service}"
 	cat >"${privoxy_service}" <<-EOF
 		[Unit]
 		Description=Privoxy ${privoxy_port}
@@ -729,7 +733,7 @@ function install_single_tor() {
 		[Service]
 		Environment=PIDFILE=/run/privoxy${privoxy_port}.pid
 		Environment=OWNER=privoxy
-		Environment=CONFIGFILE=/etc/privoxy/config${privoxy_port}
+		Environment=CONFIGFILE=/etc/privoxy${privoxy_port}/config
 		Type=forking
 		PIDFile=/run/privoxy${privoxy_port}.pid
 		ExecStart=/usr/sbin/privoxy --pidfile $PIDFILE --user $OWNER $CONFIGFILE
@@ -746,7 +750,7 @@ function install_single_tor() {
 	red "重启了服务： $privoxy_service_name"
 
 	red "测试privoxy http代理端口： ${privoxy_port}"
-	curl --proxy "http://127.0.0.1:${privoxy_port}" http://ipinfo.io/ip
+	curl --proxy "http://127.0.0.1:${privoxy_port}" http://ipinfo.io/ip ; echo
 }
 
 # 安装多个tor实例
