@@ -719,7 +719,7 @@ function install_single_tor() {
 	red "privoxy配置文件： ${privoxy_config_file}"
 	sudo sed -i -E '/^forward-socks5t /d' "${privoxy_config_file}"
 	sudo echo "forward-socks5t / 127.0.0.1:${tor_socks_port} ." >>"${privoxy_config_file}"
-	sudo sed -i -E '/^listen-address  127.0.0.1:8118/d' "${privoxy_config_file}"
+	sudo sed -i -E '/^listen-address/d' "${privoxy_config_file}"
 	sudo echo "listen-address  127.0.0.1:${privoxy_port}" >>"${privoxy_config_file}"
 
 	privoxy_service_name="privoxy${privoxy_port}.service"
