@@ -700,8 +700,9 @@ function install_single_tor() {
 	sudo systemctl restart "${tor_service_name}"
 	red "重启了服务： $tor_service_name"
 
+	sleep 3
 	red "验证socks接口： 127.0.0.1:$tor_socks_port"
-	curl --proxy "socks5h://localhost:$tor_socks_port" http://ipinfo.io/ip ; echo
+	curl --proxy "socks5h://127.0.0.1:$tor_socks_port" http://ipinfo.io/ip ; echo
 
 	if ! dpkg -s privoxy >/dev/null 2>&1; then
 		red "未安装privoxy"
@@ -729,7 +730,7 @@ function install_single_tor() {
 		[Unit]
 		Description=Privoxy ${privoxy_port}
 		After=network.target
-		
+
 		[Service]
 		Environment=PIDFILE=/run/privoxy${privoxy_port}.pid
 		Environment=OWNER=privoxy
@@ -739,7 +740,7 @@ function install_single_tor() {
 		ExecStart=/usr/sbin/privoxy --pidfile \$PIDFILE --user \$OWNER \$CONFIGFILE
 		ExecStopPost=/bin/rm -f \$PIDFILE
 		SuccessExitStatus=15
-		
+
 		[Install]
 		WantedBy=multi-user.target
 	EOF
