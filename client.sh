@@ -702,7 +702,8 @@ function install_single_tor() {
 
 	sleep 3
 	red "验证socks接口： 127.0.0.1:$tor_socks_port"
-	curl --proxy "socks5h://127.0.0.1:$tor_socks_port" http://ipinfo.io/ip ; echo
+	curl --proxy socks5h://127.0.0.1:"$tor_socks_port" http://ipinfo.io/ip
+	echo
 
 	if ! dpkg -s privoxy >/dev/null 2>&1; then
 		red "未安装privoxy"
