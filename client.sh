@@ -651,7 +651,7 @@ function install_single_tor() {
 	tor_service="/usr/lib/systemd/system/${tor_service_name}"
 
 	if ! dpkg -s tor >/dev/null 2>&1; then
-		red "未安装tor"
+		red "未安装tor，开始安装"
 		sudo apt update
 		sudo apt install tor -y
 	fi
@@ -659,8 +659,6 @@ function install_single_tor() {
 	if [ ! -d "$tor_bin_dir" ]; then
 		cp -r /var/lib/tor "$tor_bin_dir"
 		red "拷贝目录成功: $tor_bin_dir"
-	else
-		red "目录已存在: $tor_bin_dir"
 	fi
 
 	# 每次都重新创建
@@ -698,10 +696,9 @@ function install_single_tor() {
 	sudo systemctl daemon-reload
 	sudo systemctl enable "${tor_service_name}"
 	sudo systemctl restart "${tor_service_name}"
-	red "重启了服务： $tor_service_name"
 
-	sleep 3
-	red "验证socks接口： 127.0.0.1:$tor_socks_port"
+	sleep 5
+	red "验证socks代理： 127.0.0.1:$tor_socks_port"
 	curl --proxy socks5h://127.0.0.1:"$tor_socks_port" http://ipinfo.io/ip
 	echo
 
@@ -712,7 +709,6 @@ function install_single_tor() {
 	fi
 
 	privoxy_config_dir="/etc/privoxy${privoxy_port}"
-	red "privoxy配置目录： ${privoxy_config_dir}"
 	if [ ! -d "$privoxy_config_dir" ]; then
 		sudo cp -a /etc/privoxy "$privoxy_config_dir"
 	fi
@@ -731,7 +727,7 @@ function install_single_tor() {
 		[Unit]
 		Description=Privoxy ${privoxy_port}
 		After=network.target
-
+		
 		[Service]
 		Environment=PIDFILE=/run/privoxy${privoxy_port}.pid
 		Environment=OWNER=privoxy
@@ -741,7 +737,7 @@ function install_single_tor() {
 		ExecStart=/usr/sbin/privoxy --pidfile \$PIDFILE --user \$OWNER \$CONFIGFILE
 		ExecStopPost=/bin/rm -f \$PIDFILE
 		SuccessExitStatus=15
-
+		
 		[Install]
 		WantedBy=multi-user.target
 	EOF
@@ -749,10 +745,11 @@ function install_single_tor() {
 	sudo systemctl daemon-reload
 	sudo systemctl enable "${privoxy_service_name}"
 	sudo systemctl restart "${privoxy_service_name}"
-	red "重启了服务： $privoxy_service_name"
 
-	red "测试privoxy http代理端口： ${privoxy_port}"
-	curl --proxy "http://127.0.0.1:${privoxy_port}" http://ipinfo.io/ip ; echo
+	sleep 5
+	red "测试http代理： http://127.0.0.1:${privoxy_port}"
+	curl --proxy "http://127.0.0.1:${privoxy_port}" http://ipinfo.io/ip
+	echo
 }
 
 # 安装多个tor实例
