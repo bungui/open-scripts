@@ -666,8 +666,6 @@ function install_single_tor() {
 		SocksPort $tor_socks_port
 		ControlPort $tor_control_port
 		HashedControlPassword 16:78B3D69FE4335BAD60D5DF6BA25F8DF2B755DD9AAD222C42158185230F
-		StrictNodes 1
-		ExitNodes {US}
 		DataDirectory /var/lib/tor${tor_socks_port}
 	EOF
 	red "写入配置文件： $tor_config_file"
