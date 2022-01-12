@@ -766,6 +766,12 @@ function install_multiple_tor() {
 	install_single_tor "9080" "9081" "9082"
 	install_single_tor "9090" "9091" "9092"
 	install_single_tor "9100" "9101" "9102"
+
+	install_single_tor "9110" "9111" "9112"
+	install_single_tor "9120" "9121" "9122"
+	install_single_tor "9130" "9131" "9132"
+	install_single_tor "9140" "9141" "9142"
+	install_single_tor "9150" "9151" "9152"
 }
 
 function start_menu() {
