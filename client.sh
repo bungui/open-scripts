@@ -703,7 +703,6 @@ function install_single_tor() {
 	echo
 	red "尝试切换IP"
 	echo -e 'AUTHENTICATE "123456"\r\nsignal NEWNYM\r\nQUIT' | nc 127.0.0.1 "$tor_control_port"
-	echo
 	sleep 5
 	red "切换后的IP： "
 	curl --proxy socks5h://127.0.0.1:"$tor_socks_port" http://ipinfo.io/ip
@@ -805,10 +804,7 @@ function start_menu() {
 	echo "15. 安装admin服务 "
 	echo "16. 禁止ipv6 "
 	echo "17. 修改主机名 "
-	echo "18. 安装默认tor服务 "
-	echo "19. 切换tor当前的代理ip "
-	echo "20. 安装默认privoxy服务 "
-	echo "21. 安装多个tor实例"
+	echo "18. 安装多个tor实例"
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -865,15 +861,6 @@ function start_menu() {
 		change_hostname
 		;;
 	"18")
-		install_tor
-		;;
-	"19")
-		change_tor_ip_manually
-		;;
-	"20")
-		install_privoxy
-		;;
-	"21")
 		install_multiple_tor
 		;;
 	"v")
