@@ -217,7 +217,8 @@ function security_enhance() {
 	fi
 	read -p "ssh改用55555端口[y/N]: " confirm
 	if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
-		sudo sed -i -E "s/#Port 22/Port 55555/" /etc/ssh/sshd_config
+		sudo sed -i -E "s/^Port 22/Port 55555/" /etc/ssh/sshd_config
+		sudo sed -i -E "s/^#Port 22/Port 55555/" /etc/ssh/sshd_config
 		sudo systemctl restart sshd.service
 	fi
 }
@@ -771,6 +772,66 @@ function install_multiple_tor() {
 	install_single_tor "9150" "9151" "9152"
 }
 
+function add_ssh_config() {
+	read -p "输入本地密钥文件名： " private_key_name
+	if [ -z "$private_key_name" ]; then
+		red "文件名为空"
+		return 1
+	fi
+	read -p "本地用户名（默认为root）： " local_user
+	if [ -z "$local_user" ]; then
+		local_user="root"
+	fi
+	if [ "$local_user" = "root" ]; then
+		key_dir="/root"
+	else
+		key_dir="/home/${local_user}"
+	fi
+	key_dir="${key_dir}/.ssh"
+	sudo mkdir -p "$key_dir"
+	key_file="${key_dir}/${private_key_name}"
+	red "开始生成密钥到： $key_file"
+	sudo ssh-keygen -t rsa -b 2048 -f "$key_file"
+	sudo chown "${local_user}:${local_user}" "$key_dir" -R
+	sudo chmod 600 "$key_dir" -R
+	red "开始复制密钥到服务器"
+	read -p "输入服务器IP或者域名： " server_ip
+	if [ -z "$server_ip" ]; then
+		red "服务器IP或域名为空"
+		return 1
+	fi
+	read -p "输入服务器端口（默认为22）: " server_port
+	if [ -z "$server_port" ]; then
+		server_port="22"
+	fi
+	read -p "输入用户名： " server_user
+	if [ -z "$server_user" ]; then
+		red "用户名为空"
+		return 1
+	fi
+	red "复制到： ${server_user}@${server_ip}:${server_port}"
+	# 如果已拷贝，会有提示
+	sudo ssh-copy-id -i "${key_file}.pub" -p "${server_port}" "${server_user}@${server_ip}"
+	config_file="${key_dir}/config"
+	if ! sudo grep -q -E -i "Host ${private_key_name}" "$config_file" >/dev/null 2>&1; then
+		red "开始配置文件: $config_file"
+		sudo tee -a "$config_file" <<-EOF
+			Host ${private_key_name}
+			  Hostname ${server_ip}
+			  Port ${server_port}
+			  IdentityFile ${key_file}
+			  PubKeyAuthentication yes
+			  User ${server_user}
+		EOF
+	fi
+	sudo chown "${local_user}:${local_user}" "$key_dir" -R
+	# 目录需要可执行权限
+	sudo chmod 700 "${key_dir}"
+	# shellcheck disable=SC1009
+	# 不能带双引号
+	sudo chmod 600 ${key_dir}/*
+}
+
 function start_menu() {
 	clear
 	red "============================"
@@ -803,6 +864,7 @@ function start_menu() {
 	echo "16. 禁止ipv6 "
 	echo "17. 修改主机名 "
 	echo "18. 安装多个tor实例"
+	echo "19. 配置ssh使用公钥登陆 "
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -860,6 +922,9 @@ function start_menu() {
 		;;
 	"18")
 		install_multiple_tor
+		;;
+	"19")
+		add_ssh_config
 		;;
 	"v")
 		get_latest_client_script
