@@ -378,6 +378,7 @@ function install_webdav_client() {
 		sudo rclone config
 	fi
 
+	# rclone不要使用--allow-other参数，只允许root访问目录
 	sudo cat >/usr/lib/systemd/system/rclone.service <<-EOF
 		[Unit]
 		Description=Rclone Mount
@@ -385,7 +386,7 @@ function install_webdav_client() {
 		
 		[Service]
 		Type=simple
-		ExecStart=/usr/bin/rclone mount hh_webdav:/ /data/backup --cache-dir /tmp --allow-other --vfs-cache-mode writes --allow-non-empty
+		ExecStart=/usr/bin/rclone mount hh_webdav:/ /data/backup --cache-dir /tmp --vfs-cache-mode writes --allow-non-empty
 		Restart=on-abort
 		
 		[Install]
