@@ -6,18 +6,6 @@ set -x
 backup_dir="/data/backup"
 mysql_pass="123456"
 date_str=$(date +%F)
-
-function delete_files_n_days_ago() {
-	# 根目录，最好用绝对地址
-	dir_path=$1
-	# 例如，+7表示7天前的文件，-7表示7天内的文件
-	n_days=$2
-	echo "${dir_path}目录，${n_days}天的文件"
-	sudo find "${dir_path}" -type f -mtime "${n_days}"
-	echo "开始删除"
-	sudo find "${dir_path}" -type f -mtime "${n_days}" -delete
-}
-
 sudo mkdir -p "${backup_dir}"
 
 # mysql备份
@@ -41,20 +29,18 @@ sudo rm "${redis_zip_file}" -f
 sudo rm "${redis_tmp_file}" -f
 echo "备份redis成功"
 
-# 备份data目录
-data_dir="/repo/py-aiohttp-admin/data"
-zip_file="${backup_dir}/admin-data-${date_str}.zip"
-if [ -d "${data_dir}" ]; then
-	echo "开始备份data目录: $data_dir"
-	sudo zip -r -9 "$zip_file" "$data_dir"
-	result=$?
-	# 避免压缩失败后，自动删除了数据，不可挽回
-	if [ "$result" -eq 0 ]; then
-		echo "备份成功，文件： ${zip_file}"
-		echo "开始清理文件"
-		sudo rm "$data_dir"/* -f
-	fi
-fi
+# 备份webdav目录
+webdav_dir="/webdav"
+webdav_filename="hkwebdav_${date_str}.zip"
+webdav_tmp_file="/tmp/${webdav_filename}"
+webdav_file="${backup_dir}/${webdav_filename}"
 
-# 下面函数删除有问题，先注释
-# delete_files_n_days_ago "${backup_dir}" "+30"
+sudo zip -9 -r "${webdav_tmp_file}" "${webdav_dir}"
+sudo cp "$webdav_tmp_file" "$webdav_file"
+sudo rm "$webdav_tmp_file"
+echo "备份本地webdav目录成功"
+
+# 需要等待一段时间，因为上传到webdav后，mtime才会是最新的
+sleep 600
+find "$backup_dir" -mindepth 1 -mtime +10 -delete -print
+echo "删除10天前的文件，并打印删除文件路径"

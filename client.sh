@@ -790,8 +790,12 @@ function add_ssh_config() {
 	key_dir="${key_dir}/.ssh"
 	sudo mkdir -p "$key_dir"
 	key_file="${key_dir}/${private_key_name}"
-	red "开始生成密钥到： $key_file"
-	sudo ssh-keygen -t rsa -b 2048 -f "$key_file"
+	if ! sudo test -f "$key_file"; then
+		red "开始生成密钥到： $key_file"
+		sudo ssh-keygen -t rsa -b 2048 -f "$key_file"
+	else
+		red "密钥已存在： $key_file"
+	fi
 	sudo chown "${local_user}:${local_user}" "$key_dir" -R
 	sudo chmod 600 "$key_dir" -R
 	red "开始复制密钥到服务器"
