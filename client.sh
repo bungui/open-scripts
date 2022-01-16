@@ -837,6 +837,21 @@ function add_ssh_config() {
 	sudo chmod 600 ${key_dir}/*
 }
 
+function install_v2ray() {
+	v2ray_bin="/usr/local/bin/v2ray"
+	v2ray_conf="/usr/local/etc/v2ray/config.json"
+	if [ -f "$v2ray_bin" ]; then
+		red "已安装v2ray: $v2ray_bin"
+	else
+		red "开始安装v2ray"
+		sudo bash <(curl -L https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh)
+	fi
+	# 弄好配置再启动
+	sudo systemctl stop v2ray.service
+	sudo systemctl disable v2ray.service
+	red "已停止并禁用v2ray"
+}
+
 function start_menu() {
 	clear
 	red "============================"
@@ -870,6 +885,7 @@ function start_menu() {
 	echo "17. 修改主机名 "
 	echo "18. 安装多个tor实例"
 	echo "19. 配置ssh使用公钥登陆 "
+	echo "20. 安装v2ray "
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -930,6 +946,9 @@ function start_menu() {
 		;;
 	"19")
 		add_ssh_config
+		;;
+	"20")
+		install_v2ray
 		;;
 	"v")
 		get_latest_client_script
