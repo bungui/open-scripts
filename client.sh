@@ -373,11 +373,12 @@ function install_webdav_client() {
 		curl https://rclone.org/install.sh | sudo bash
 	fi
 
-	if ! sudo rclone listremotes | grep -q hh_webdav; then
+	if ! sudo rclone listremotes | grep -q hh_webdav 2>/dev/null; then
 		red "未发现远程配置：hh_webdav"
 		sudo rclone config
 	fi
 
+	sudo mkdir -p /data/backup
 	# rclone不要使用--allow-other参数，只允许root访问目录
 	sudo cat >/usr/lib/systemd/system/rclone.service <<-EOF
 		[Unit]
@@ -397,8 +398,8 @@ function install_webdav_client() {
 	sudo systemctl enable rclone.service
 	sudo systemctl restart rclone.service
 	sudo systemctl status rclone.service
-
 	red "rclone配置完成"
+	sudo ls -lh /data/backup
 }
 
 function install_backup_cron_job() {
