@@ -226,7 +226,8 @@ function security_enhance() {
 		sudo apt update
 		sudo apt install fail2ban -y
 		sudo systemctl restart fail2ban
-		sleep 5
+		red "稍等10秒钟"
+		sleep 10
 		sudo fail2ban-client status
 	fi
 }
