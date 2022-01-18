@@ -905,19 +905,61 @@ function install_clash() {
 	sudo ss -ntl | grep --color=auto -E "7890|7891"
 }
 
+function install_subconverter() {
+	# official: https://github.com/tindy2013/subconverter
+	# 配置说明： https://github.com/tindy2013/subconverter/blob/master/README-cn.md
+	download_url="https://github.com/tindy2013/subconverter/releases/download/v0.7.1/subconverter_linux64.tar.gz"
+	subconverter_bin="/repo/subconverter/subconverter"
+	tmp_file="/tmp/subconverter.tar.gz"
+	# 优先级最高的配置文件
+	subconverter_toml="/repo/subconverter/pref.toml"
+	subconverter_service="/usr/lib/systemd/system/subconverter.service"
+	if [ ! -f "$subconverter_bin" ]; then
+		red "开始安装subconverter"
+		sudo wget "$download_url" -O "$tmp_file"
+		sudo mkdir -p /repo
+		sudo tar zxvf "$tmp_file" -C /repo
+		sudo rm "$tmp_file"
+	else
+		red "subconverter已安装"
+	fi
+
+	if [ ! -f "$subconverter_toml" ]; then
+		sudo mv /repo/subconverter/pref.example.toml "$subconverter_toml"
+	fi
+	sudo sed -i 's/listen = "0.0.0.0"/listen = "127.0.0.1"/' "$subconverter_toml"
+
+	sudo cat >"$subconverter_service" <<-EOF
+		[Unit]
+		Description=Subconverter
+		After=network.target
+
+		[Service]
+		Type=simple
+		Restart=always
+		ExecStart=$subconverter_bin
+
+		[Install]
+		WantedBy=multi-user.target
+	EOF
+
+	sudo systemctl daemon-reload
+	sudo systemctl enable subconverter.service
+	sudo systemctl restart subconverter.service
+	sleep 5
+	red "确认端口"
+	sudo ss -ntl | grep --color=auto -E "25500"
+
+}
+
 function start_menu() {
 	clear
 	red "============================"
-	red "                            "
-	red "    AIO Toolbox             "
-	echo "                           "
-	red "============================"
-	yellow "检测到VPS信息如下"
 	yellow "处理器架构：$arch"
 	yellow "虚拟化架构：$virt"
 	yellow "操作系统：$release"
 	yellow "内核版本：$kernelVer"
-	echo "                            "
+	red "============================"
 	green "下面是工具箱提供的一些功能:"
 	echo "1. 安全加固"
 	echo "2. 安装github命令行"
@@ -940,6 +982,7 @@ function start_menu() {
 	echo "19. 配置ssh使用公钥登陆 "
 	echo "20. 安装v2ray "
 	echo "21. 安装clash "
+	echo "22. 安装subconverter "
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -1006,6 +1049,9 @@ function start_menu() {
 		;;
 	"21")
 		install_clash
+		;;
+	"22")
+		install_subconverter
 		;;
 	"v")
 		get_latest_client_script
