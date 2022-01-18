@@ -853,6 +853,59 @@ function install_v2ray() {
 	red "已停止并禁用v2ray"
 }
 
+function install_clash() {
+	# official: https://github.com/Dreamacro/clash
+	download_url="https://github.com/Dreamacro/clash/releases/download/v1.9.0/clash-linux-amd64-v1.9.0.gz"
+	clash_bin="/usr/local/bin/clash"
+	clash_service="/usr/lib/systemd/system/clash.service"
+	clash_config_dir="/etc/clash"
+	clash_config="/etc/clash/config.yaml"
+	clash_mmdb="/etc/clash/Country.mmdb"
+	# official: https://github.com/Dreamacro/maxmind-geoip
+	country_mmdb_url="https://github.com/Dreamacro/maxmind-geoip/releases/download/20220112/Country.mmdb"
+	if [ ! -f "$clash_bin" ]; then
+		red "开始下载clash"
+		sudo wget "$download_url" -O $home_dir/clash.gz
+		sudo gunzip -c clash.gz >"$clash_bin"
+		sudo chmod +x "$clash_bin"
+	else
+		red "clash已安装"
+	fi
+	sudo mkdir -p "$clash_config_dir"
+	sudo wget "$country_mmdb_url" -O "$clash_mmdb"
+	if [ ! -f "$clash_config" ]; then
+		red "生成默认的配置文件"
+		sudo cat >"$clash_config" <<-EOF
+			port: 7890
+			socks-port: 7891
+			allow-lan: false
+			bind-address: '127.0.0.1'
+		EOF
+	fi
+
+	sudo cat >"$clash_service" <<-EOF
+		[Unit]
+		Description=Clash daemon, A rule-based proxy in Go.
+		After=network.target
+		
+		[Service]
+		Type=simple
+		Restart=always
+		ExecStart=/usr/local/bin/clash -d /etc/clash
+		
+		[Install]
+		WantedBy=multi-user.target
+	EOF
+
+	sudo systemctl daemon-reload
+	sudo systemctl enable clash.service
+	sudo systemctl restart clash.service
+	red "确认端口"
+	sudo ss -ntl | grep --color=auto -E "7890|7891"
+	sleep 5
+
+}
+
 function start_menu() {
 	clear
 	red "============================"
@@ -887,6 +940,7 @@ function start_menu() {
 	echo "18. 安装多个tor实例"
 	echo "19. 配置ssh使用公钥登陆 "
 	echo "20. 安装v2ray "
+	echo "21. 安装clash "
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -950,6 +1004,9 @@ function start_menu() {
 		;;
 	"20")
 		install_v2ray
+		;;
+	"21")
+		install_clash
 		;;
 	"v")
 		get_latest_client_script
