@@ -221,6 +221,13 @@ function security_enhance() {
 		sudo sed -i -E "s/^#Port 22/Port 55555/" /etc/ssh/sshd_config
 		sudo systemctl restart sshd.service
 	fi
+	read -p "是否安装fail2ban[y/N]: " confirm
+	if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
+		sudo apt update
+		sudo apt install fail2ban -y
+		sudo systemctl restart fail2ban
+		sudo fail2ban-client status
+	fi
 }
 
 function install_socks5_proxy() {
