@@ -225,6 +225,10 @@ function security_enhance() {
 	if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
 		sudo apt update
 		sudo apt install fail2ban -y
+
+		red "对55555端口的sshd进行限制"
+		sudo sed -i 's/port    = ssh/port    = 55555/' /etc/fail2ban/jail.conf
+
 		sudo systemctl restart fail2ban
 		red "稍等10秒钟"
 		sleep 10
