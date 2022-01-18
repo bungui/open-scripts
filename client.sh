@@ -226,17 +226,17 @@ function security_enhance() {
 		sudo apt update
 		sudo apt install fail2ban -y
 
-		red "开启sshd日志"
+		red "sshd登陆失败必须记录日志"
 		sudo sed -i 's/#SyslogFacility AUTH/SyslogFacility AUTH/' /etc/ssh/sshd_config
 		sudo sed -i 's/#LogLevel INFO/LogLevel INFO/' /etc/ssh/sshd_config
 		sudo systemctl restart sshd.service
 
-		red "对55555端口的sshd进行限制"
+		red "fail2ban的sshd端口更新为55555"
 		sudo sed -i 's/port    = ssh/port    = 55555/' /etc/fail2ban/jail.conf
 		sudo sed -i 's/enabled = false/enabled = true/' /etc/fail2ban/jail.conf
 
 		sudo systemctl restart fail2ban
-		red "稍等10秒钟"
+		red "等待fail2ban启动完成"
 		sleep 10
 		sudo fail2ban-client status
 		red "fail2ban sshd状态"
