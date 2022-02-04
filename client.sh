@@ -271,17 +271,17 @@ function install_socks5_proxy() {
 		Description=Brook-socks5
 		After=network.target
 		Wants=network.target
-		
+
 		[Service]
 		WorkingDirectory=/repo
 		ExecStart=/usr/bin/brook socks5 --socks5 0.0.0.0:${port} --username ${username} --password "${userpass}"
 		Restart=on-abnormal
 		RestartSec=5s
 		KillMode=mixed
-		
+
 		StandardOutput=null
 		StandardError=syslog
-		
+
 		[Install]
 		WantedBy=multi-user.target
 	EOF
@@ -356,13 +356,13 @@ function install_webdav_server() {
 		[Unit]
 		Description=WebDAV server
 		After=network.target
-		
+
 		[Service]
 		Type=simple
 		User=root
 		ExecStart=/usr/bin/webdav --address 127.0.0.1 --port ${port} --config $webdav_config
 		Restart=on-failure
-		
+
 		[Install]
 		WantedBy=multi-user.target
 	EOF
@@ -405,12 +405,12 @@ function install_webdav_client() {
 		[Unit]
 		Description=Rclone Mount
 		After=network-online.target
-		
+
 		[Service]
 		Type=simple
 		ExecStart=/usr/bin/rclone mount hh_webdav:/ /data/backup --cache-dir /tmp --vfs-cache-mode writes --allow-non-empty
 		Restart=on-abort
-		
+
 		[Install]
 		WantedBy=default.target
 	EOF
@@ -505,17 +505,17 @@ function install_admin_service() {
 		After=mysqld.service
 		After=redis.service
 		Wants=network.target
-		
+
 		[Service]
 		WorkingDirectory=${repo_dir}
 		ExecStart=${repo_dir}/venv/bin/python ${repo_dir}/main.py
 		Restart=on-abnormal
 		RestartSec=5s
 		KillMode=mixed
-		
+
 		StandardOutput=null
 		StandardError=syslog
-		
+
 		[Install]
 		WantedBy=multi-user.target
 	EOF
@@ -699,17 +699,17 @@ function install_single_tor() {
 		Description=tor${tor_socks_port}
 		After=network.target
 		Wants=network.target
-		
+
 		[Service]
 		WorkingDirectory=/var/lib/tor${tor_socks_port}
 		ExecStart=/usr/sbin/tor -f ${tor_config_file}
 		Restart=on-abnormal
 		RestartSec=5s
 		KillMode=mixed
-		
+
 		StandardOutput=null
 		StandardError=syslog
-		
+
 		[Install]
 		WantedBy=multi-user.target
 	EOF
@@ -755,7 +755,7 @@ function install_single_tor() {
 		[Unit]
 		Description=Privoxy ${privoxy_port}
 		After=network.target
-		
+
 		[Service]
 		Environment=PIDFILE=/run/privoxy${privoxy_port}.pid
 		Environment=OWNER=privoxy
@@ -765,7 +765,7 @@ function install_single_tor() {
 		ExecStart=/usr/sbin/privoxy --pidfile \$PIDFILE --user \$OWNER \$CONFIGFILE
 		ExecStopPost=/bin/rm -f \$PIDFILE
 		SuccessExitStatus=15
-		
+
 		[Install]
 		WantedBy=multi-user.target
 	EOF
@@ -908,12 +908,12 @@ function install_clash() {
 		[Unit]
 		Description=Clash daemon, A rule-based proxy in Go.
 		After=network.target
-		
+
 		[Service]
 		Type=simple
 		Restart=always
 		ExecStart=/usr/local/bin/clash -d /etc/clash
-		
+
 		[Install]
 		WantedBy=multi-user.target
 	EOF
@@ -973,6 +973,30 @@ function install_subconverter() {
 
 }
 
+function install_docker() {
+	if [ ! -f "/usr/bin/docker" ]; then
+		red "开始安装docker"
+		sudo apt-get update
+		sudo apt-get install ca-certificates curl gnupg lsb-release -y
+		echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+		       $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
+		sudo apt update
+		sudo apt-get install docker-ce docker-ce-cli containerd.io -y
+	else
+		red "已安装docker"
+	fi
+	if [ ! -f "/usr/local/bin/docker-compose" ]; then
+		red "开始安装docker compose"
+		sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+	else
+		red "已经安装docker compose"
+	fi
+	red "测试docker hello world"
+	sudo docker run hello-world
+	red "测试docker curl"
+	sudo docker run --rm appropriate/curl -ksI https://www.githubstatus.com/
+}
+
 function start_menu() {
 	clear
 	red "============================"
@@ -1004,6 +1028,7 @@ function start_menu() {
 	echo "20. 安装v2ray "
 	echo "21. 安装clash "
 	echo "22. 安装subconverter "
+	echo "23. 安装docker "
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -1073,6 +1098,9 @@ function start_menu() {
 		;;
 	"22")
 		install_subconverter
+		;;
+	"23")
+		install_docker
 		;;
 	"v")
 		get_latest_client_script
