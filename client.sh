@@ -923,7 +923,7 @@ function install_clash() {
 	sudo systemctl restart clash.service
 	sleep 5
 	red "确认端口"
-	sudo ss -ntl | grep --color=auto -E "7890|7891"
+	sudo ss -ntl | grep --color=auto -E "7890|7891|9090"
 
 	# read -p "是否创建多个实例？[y/N]: "
 
