@@ -11,6 +11,7 @@ virt=$(systemd-detect-virt)
 kernelVer=$(uname -r)
 home_dir="/repo"
 sudo mkdir -p "$home_dir"
+sudo mkdir -p "/usr/lib/systemd/system"
 
 green() {
 	echo -e "\033[32m\033[01m$1\033[0m"
@@ -887,7 +888,7 @@ function install_clash() {
 	if [ ! -f "$clash_bin" ]; then
 		red "开始下载clash"
 		sudo wget "$download_url" -O $home_dir/clash.gz
-		sudo gunzip -c clash.gz >"$clash_bin"
+		sudo gunzip -c $home_dir/clash.gz >"$clash_bin"
 		sudo chmod +x "$clash_bin"
 	else
 		red "clash已安装"
@@ -897,10 +898,9 @@ function install_clash() {
 	if [ ! -f "$clash_config" ]; then
 		red "生成默认的配置文件"
 		sudo cat >"$clash_config" <<-EOF
-			port: 7890
 			socks-port: 7891
-			allow-lan: false
-			bind-address: '127.0.0.1'
+			external-controller: 127.0.0.1:9090
+			bind-address: 127.0.0.1
 		EOF
 	fi
 
@@ -924,6 +924,9 @@ function install_clash() {
 	sleep 5
 	red "确认端口"
 	sudo ss -ntl | grep --color=auto -E "7890|7891"
+
+	# read -p "是否创建多个实例？[y/N]: "
+
 }
 
 function install_subconverter() {
@@ -970,7 +973,6 @@ function install_subconverter() {
 	sleep 5
 	red "确认端口"
 	sudo ss -ntl | grep --color=auto -E "25500"
-
 }
 
 function install_docker() {
