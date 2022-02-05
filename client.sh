@@ -921,11 +921,63 @@ function install_clash() {
 	sudo systemctl daemon-reload
 	sudo systemctl enable clash.service
 	sudo systemctl restart clash.service
-	sleep 5
-	red "确认端口"
-	sudo ss -ntl | grep --color=auto -E "7890|7891|9090"
 
-	# read -p "是否创建多个实例？[y/N]: "
+	read -p "是否创建多个实例？[y/N]: " confirm
+	if [ "$confirm" == "Y" ] || [ "$confirm" == 'y' ]; then
+		socks_ports=(7900 7901 7902 7903 7904 7905 7906 7907 7908 7909)
+		api_ports=(9100 9101 9102 9103 9104 9105 9106 9107 9108 9109)
+		for ((i = 0; i < ${#socks_ports[@]}; i++)); do
+			instance_socks_port=${socks_ports[i]}
+			instance_api_port=${api_ports[i]}
+			instance_config_dir="/etc/clash${instance_socks_port}"
+			if [ -d "$instance_config_dir" ]; then
+				red "目录已存在：${instance_config_dir}"
+				read -p "是否覆盖[y/N]: " confirm
+				if [ "$confirm" != "Y" ] && [ "$confirm" != 'y' ]; then
+					red "忽略覆盖"
+					continue
+				fi
+				red "确认覆盖配置：${instance_config_dir}"
+			fi
+			sudo mkdir -p "${instance_config_dir}"
+			instance_config_file="${instance_config_dir}/config.yaml"
+			instance_config_mmdb="${instance_config_dir}/Country.mmdb"
+			instance_service_name="clash${instance_socks_port}.service"
+			instance_service="/usr/lib/systemd/system/${instance_service_name}"
+			# 复制mmdb文件
+			sudo cp "$clash_mmdb" "$instance_config_mmdb"
+			# 初始化config.yaml文件
+			sudo cat >"$instance_config_file" <<-EOF
+				socks-port: ${instance_socks_port}
+				external-controller: 127.0.0.1:${instance_api_port}
+				bind-address: 127.0.0.1
+			EOF
+			# 初始化服务文件
+			sudo cat >"$instance_service" <<-EOF
+				[Unit]
+				Description=Clash daemon ${instance_socks_port} 
+				After=network.target
+
+				[Service]
+				Type=simple
+				Restart=always
+				ExecStart=/usr/local/bin/clash -d ${instance_config_dir}
+
+				[Install]
+				WantedBy=multi-user.target
+			EOF
+			sudo systemctl daemon-reload
+			sudo systemctl enable ${instance_service_name}
+			sudo systemctl start ${instance_service_name}
+			sleep 3
+			red "日志信息：$instance_service_name"
+			sudo journalctl -n 20 -u ${instance_service_name}
+		done
+
+	fi
+
+	red "确认监听地址和端口"
+	sudo ss -ntl | grep --color=auto -P "78\d{2}|79\d{2}|90\d{2}|91\d{2}"
 
 }
 
