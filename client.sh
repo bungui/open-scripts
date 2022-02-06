@@ -195,6 +195,15 @@ function install_client_service() {
 }
 
 function security_enhance() {
+
+	# 临时修改最大打开文件数
+	sudo ulimit -n 8192
+	if ! sudo cat /etc/security/limits.conf | grep "soft nofile"; then
+		red "修改最大打开文件数"
+		sudo echo "* soft nofile 8192" >>/etc/security/limits.conf
+		sudo echo "* hard nofile 8192" >>/etc/security/limits.conf
+	fi
+
 	read -p "修改root密码[y/N]: " confirm
 	if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
 		red "开始修改root密码"
