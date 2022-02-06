@@ -198,10 +198,18 @@ function security_enhance() {
 
 	# 临时修改最大打开文件数
 	sudo ulimit -n 8192
-	if ! sudo cat /etc/security/limits.conf | grep "soft nofile"; then
+	if ! sudo grep -P "soft\s+nofile" /etc/security/limits.conf; then
 		red "修改最大打开文件数"
-		sudo echo "* soft nofile 8192" >>/etc/security/limits.conf
-		sudo echo "* hard nofile 8192" >>/etc/security/limits.conf
+		sudo cat >/etc/security/limits.conf <<-EOF
+			*        soft    noproc  10240
+			*        hard    noproc  10240
+			*        soft    nofile  10240
+			*        hard    nofile  10240
+			root     soft    noproc  10240
+			root     hard    noproc  10240
+			root     soft    nofile  10240
+			root     hard    nofile  10240
+		EOF
 	fi
 
 	read -p "修改root密码[y/N]: " confirm
