@@ -897,6 +897,9 @@ function install_clash() {
 	sudo wget "$country_mmdb_url" -O "$clash_mmdb"
 	if [ ! -f "$clash_config" ]; then
 		red "生成默认的配置文件"
+
+		# 这里未使用dns，因为dns端口如果相同会有冲突
+		# journal日志可以忽略：Start DNS server error: missing port in address
 		sudo cat >"$clash_config" <<-EOF
 			  socks-port: 7891
 			  external-controller: 127.0.0.1:9090
