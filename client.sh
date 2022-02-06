@@ -197,10 +197,10 @@ function install_client_service() {
 function security_enhance() {
 
 	# 临时修改最大打开文件数
-	sudo ulimit -n 8192
+	ulimit -n 8192
 	if ! sudo grep -P "soft\s+nofile" /etc/security/limits.conf; then
 		red "修改最大打开文件数"
-		sudo cat >/etc/security/limits.conf <<-EOF
+		sudo cat >>/etc/security/limits.conf <<-EOF
 			*        soft    noproc  10240
 			*        hard    noproc  10240
 			*        soft    nofile  10240
