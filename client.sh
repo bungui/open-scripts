@@ -877,7 +877,7 @@ function install_v2ray() {
 
 function install_clash() {
 	# official: https://github.com/Dreamacro/clash
-	download_url="https://github.com/Dreamacro/clash/releases/download/v1.9.0/clash-linux-amd64-v1.9.0.gz"
+	download_url="https://github.com/Dreamacro/clash/releases/download/v1.8.0/clash-linux-amd64-v1.8.0.gz"
 	clash_bin="/usr/local/bin/clash"
 	clash_service="/usr/lib/systemd/system/clash.service"
 	clash_config_dir="/etc/clash"
