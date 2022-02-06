@@ -898,9 +898,11 @@ function install_clash() {
 	if [ ! -f "$clash_config" ]; then
 		red "生成默认的配置文件"
 		sudo cat >"$clash_config" <<-EOF
-			socks-port: 7891
-			external-controller: 127.0.0.1:9090
-			bind-address: 127.0.0.1
+			  socks-port: 7891
+			  external-controller: 127.0.0.1:9090
+			  bind-address: 127.0.0.1
+			  dns:
+			    enable: false
 		EOF
 	fi
 
@@ -951,6 +953,8 @@ function install_clash() {
 				socks-port: ${instance_socks_port}
 				external-controller: 127.0.0.1:${instance_api_port}
 				bind-address: 127.0.0.1
+				dns:
+				  enable: false
 			EOF
 			# 初始化服务文件
 			sudo cat >"$instance_service" <<-EOF
