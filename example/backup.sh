@@ -9,6 +9,7 @@ date_str=$(date +%F)
 sudo mkdir -p "${backup_dir}"
 
 # mysql备份
+# rclone同步到webdav前，文件的mtime是很旧的。所以要复制前根据时间戳删除
 sudo find $backup_dir/mysql* -mindepth 1 -mtime +30 -delete -print
 sql_file="/tmp/mysql-${date_str}.sql"
 zip_file="/tmp/mysql-${date_str}.zip"
@@ -38,4 +39,5 @@ webdav_file="${backup_dir}/hkwebdav_${date_str}.zip"
 sudo zip -9 -r "${webdav_file}" "${webdav_dir}"
 echo "备份本地webdav目录成功"
 
-# rclone同步到webdav前，文件的mtime是很旧的，不可以根据mtime删除文件
+# 参考用法：
+# 增量复制：rsync -ur /data/backup/video/* /share/video
