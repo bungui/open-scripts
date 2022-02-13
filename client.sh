@@ -96,6 +96,18 @@ function download_script_repo_file() {
 	red "下载成功，文件路径： ${dest_path}"
 }
 
+function install_redis() {
+	if [ -f /usr/bin/redis-cli ]; then
+		red "redis已安装"
+	else
+		red "开始安装redis"
+		sudo apt update
+		sudo apt install redis -y
+	fi
+	red "当前端口情况： "
+	ss -ntl | grep --color=auto 6379
+}
+
 function get_public_ip() {
 	curl -s myip.ipip.net
 }
@@ -168,6 +180,7 @@ function check_virtualenv() {
 }
 
 function clone_client_repo() {
+	install_redis
 	repo_dir="/repo/py-aiohttp-client"
 	if [ -d "$repo_dir" ]; then
 		red "仓库已经克隆，路径： $repo_dir"
@@ -187,11 +200,22 @@ function clone_client_repo() {
 
 function install_client_service() {
 	cd /repo/py-aiohttp-client
-	cp deploy/client.service /usr/lib/systemd/system/aiohttp-client.service
+	service_path="/usr/lib/systemd/system/aiohttp-client.service"
+	if [ -f "$service_path" ]; then
+		red "已存在：$service_path"
+		read -p "是否覆盖[y/N]: " confirm
+		if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
+			cp deploy/client.service /usr/lib/systemd/system/aiohttp-client.service
+		fi
+	fi
+
+	check_virtualenv
 	sudo systemctl daemon-reload
 	sudo systemctl enable aiohttp-client.service
 	sudo systemctl start aiohttp-client.service
 	sudo journalctl -f -u aiohttp-client.service
+	red "可以修改服务的环境变量："
+	red "$service_path"
 }
 
 function security_enhance() {
@@ -485,17 +509,6 @@ function clone_admin_repo() {
 		cd py-aiohttp-admin
 		check_virtualenv
 	fi
-}
-
-function install_redis() {
-	if [ -f /usr/bin/redis-cli ]; then
-		red "redis已安装"
-	else
-		sudo apt update
-		sudo apt install redis -y
-	fi
-	red "当前端口情况： "
-	ss -ntl | grep --color=auto 6379
 }
 
 function install_mysql() {
