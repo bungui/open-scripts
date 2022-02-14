@@ -108,7 +108,7 @@ function check_redis() {
 	red "当前redis端口情况： "
 	ss -ntl | grep --color=auto 6379
 	red "检查redis完毕"
-	sleep 2
+	sleep 5
 }
 
 function get_public_ip() {
@@ -145,7 +145,7 @@ function check_gh_status() {
 		echo "已经登陆github"
 	fi
 	red "检查gh完毕"
-	sleep 2
+	sleep 5
 }
 
 function check_virtualenv() {
@@ -172,7 +172,7 @@ function check_virtualenv() {
 		pip install -r requirements.txt
 	fi
 	red "检查依赖包完毕"
-	sleep 2
+	sleep 5
 }
 
 function clone_client_repo() {
@@ -208,12 +208,16 @@ function install_client_service() {
 		fi
 	fi
 
+	red "服务文件路径：$service_path"
+	sleep 5
+
 	sudo systemctl daemon-reload
 	sudo systemctl enable aiohttp-client.service
 	sudo systemctl start aiohttp-client.service
-	sudo journalctl -f -u aiohttp-client.service
-	red "可以修改服务的环境变量："
-	red "$service_path"
+	# sudo journalctl -f -u aiohttp-client.service
+	sleep 5
+	tail -f files/logs/app.log
+
 }
 
 function security_enhance() {
@@ -970,7 +974,7 @@ function check_clash() {
 	red "确认clash监听地址和端口"
 	sudo ss -ntl | grep --color=auto -P "78\d{2}|90\d{2}"
 	red "检查clash完毕"
-	sleep 2
+	sleep 5
 }
 
 function install_subconverter() {
