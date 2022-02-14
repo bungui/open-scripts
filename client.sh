@@ -96,7 +96,7 @@ function download_script_repo_file() {
 	red "下载成功，文件路径： ${dest_path}"
 }
 
-function install_redis() {
+function check_redis() {
 	if [ -f /usr/bin/redis-cli ]; then
 		red "redis已安装"
 	else
@@ -104,8 +104,9 @@ function install_redis() {
 		sudo apt update
 		sudo apt install redis -y
 	fi
-	red "当前端口情况： "
+	red "当前redis端口情况： "
 	ss -ntl | grep --color=auto 6379
+	sleep 2
 }
 
 function get_public_ip() {
@@ -120,34 +121,20 @@ function get_latest_client_script() {
 	exit 0
 }
 
-function install_github_cli() {
+function check_gh_status() {
 	# 参考： https://github.com/cli/cli/blob/trunk/docs/install_linux.md
 	if ! type gh >/dev/null 2>&1; then
 		yellow "gh未安装，安装中"
-		if [ $release = "Centos" ]; then
-			sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-			sudo dnf install gh
-		else
-			curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-			echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
-			sudo apt update
-			sudo apt install gh -y
-		fi
+		curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+		echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
+		sudo apt update
+		sudo apt install gh -y
 	else
 		green "gh已安装，更新中"
-		if [ $release = "Centos" ]; then
-			sudo dnf update gh
-		else
-			sudo apt update
-			sudo apt install gh -y
-		fi
+		sudo apt update
+		sudo apt install gh -y
 	fi
-}
-
-function gh_login() {
-	gh auth status
-	result=$?
-	if [ $result -eq 1 ]; then
+	if ! gh auth status >/dev/null 2>&1; then
 		echo "未登陆github"
 		gh auth login
 	else
@@ -162,9 +149,7 @@ function check_virtualenv() {
 		return 1
 	fi
 
-	dpkg -s python3-virtualenv
-	result=$?
-	if [ $result -eq 1 ]; then
+	if ! dpkg -s python3-virtualenv >/dev/null 2>&1; then
 		red "未安装python3-virtualenv"
 		sudo apt update
 		sudo apt install python3 python3-pip python3-virtualenv -y
@@ -176,15 +161,21 @@ function check_virtualenv() {
 	source venv/bin/activate
 	red "安装依赖包"
 	pip install --upgrade pip
-	pip install -r requirements.txt
+	if [ -f requirements.txt ]; then
+		pip install -r requirements.txt
+	fi
 }
 
 function clone_client_repo() {
-	install_redis
+	check_gh_status
+	check_redis
+	check_clash
 	repo_dir="/repo/py-aiohttp-client"
+	systemctl stop aiohttp-client >/dev/null 2>&1
 	if [ -d "$repo_dir" ]; then
 		red "仓库已经克隆，路径： $repo_dir"
 		cd "$repo_dir"
+		rm __pycache__/ -rf >/dev/null 2>&1
 		red "开始更新代码"
 		git pull
 		check_virtualenv
@@ -209,7 +200,6 @@ function install_client_service() {
 		fi
 	fi
 
-	check_virtualenv
 	sudo systemctl daemon-reload
 	sudo systemctl enable aiohttp-client.service
 	sudo systemctl start aiohttp-client.service
@@ -905,7 +895,7 @@ function install_v2ray() {
 	red "已停止并禁用v2ray"
 }
 
-function install_clash() {
+function check_clash() {
 	# official: https://github.com/Dreamacro/clash
 	download_url="https://github.com/Dreamacro/clash/releases/download/v1.8.0/clash-linux-amd64-v1.8.0.gz"
 	clash_bin="/usr/local/bin/clash"
@@ -924,7 +914,15 @@ function install_clash() {
 		red "clash已安装"
 	fi
 	sudo mkdir -p "$clash_config_dir"
-	sudo wget "$country_mmdb_url" -O "$clash_mmdb"
+	# 下载mmdb数据库
+	if [ -f "$clash_mmdb" ]; then
+		read -p "是否覆盖[y/N]: " confirm
+		if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
+			sudo wget "$country_mmdb_url" -O "$clash_mmdb"
+		fi
+	else
+		sudo wget "$country_mmdb_url" -O "$clash_mmdb"
+	fi
 	if [ ! -f "$clash_config" ]; then
 		red "生成默认的配置文件"
 
@@ -939,83 +937,29 @@ function install_clash() {
 		EOF
 	fi
 
-	sudo cat >"$clash_service" <<-EOF
-		[Unit]
-		Description=Clash daemon, A rule-based proxy in Go.
-		After=network.target
+	if [ ! -f "$clash_service" ]; then
+		sudo cat >"$clash_service" <<-EOF
+			[Unit]
+			Description=Clash daemon, A rule-based proxy in Go.
+			After=network.target
 
-		[Service]
-		Type=simple
-		Restart=always
-		ExecStart=/usr/local/bin/clash -d /etc/clash
+			[Service]
+			Type=simple
+			Restart=always
+			ExecStart=/usr/local/bin/clash -d /etc/clash
 
-		[Install]
-		WantedBy=multi-user.target
-	EOF
+			[Install]
+			WantedBy=multi-user.target
+		EOF
+	fi
 
 	sudo systemctl daemon-reload
 	sudo systemctl enable clash.service
 	sudo systemctl restart clash.service
 
-	read -p "是否创建多个实例？[y/N]: " confirm
-	if [ "$confirm" == "Y" ] || [ "$confirm" == 'y' ]; then
-		socks_ports=(7900 7901 7902 7903 7904 7905 7906 7907 7908 7909)
-		api_ports=(9100 9101 9102 9103 9104 9105 9106 9107 9108 9109)
-		for ((i = 0; i < ${#socks_ports[@]}; i++)); do
-			instance_socks_port=${socks_ports[i]}
-			instance_api_port=${api_ports[i]}
-			instance_config_dir="/etc/clash${instance_socks_port}"
-			if [ -d "$instance_config_dir" ]; then
-				red "目录已存在：${instance_config_dir}"
-				read -p "是否覆盖[y/N]: " confirm
-				if [ "$confirm" != "Y" ] && [ "$confirm" != 'y' ]; then
-					red "忽略覆盖"
-					continue
-				fi
-				red "确认覆盖配置：${instance_config_dir}"
-			fi
-			sudo mkdir -p "${instance_config_dir}"
-			instance_config_file="${instance_config_dir}/config.yaml"
-			instance_config_mmdb="${instance_config_dir}/Country.mmdb"
-			instance_service_name="clash${instance_socks_port}.service"
-			instance_service="/usr/lib/systemd/system/${instance_service_name}"
-			# 复制mmdb文件
-			sudo cp "$clash_mmdb" "$instance_config_mmdb"
-			# 初始化config.yaml文件
-			sudo cat >"$instance_config_file" <<-EOF
-				socks-port: ${instance_socks_port}
-				external-controller: 127.0.0.1:${instance_api_port}
-				bind-address: 127.0.0.1
-				dns:
-				  enable: false
-			EOF
-			# 初始化服务文件
-			sudo cat >"$instance_service" <<-EOF
-				[Unit]
-				Description=Clash daemon ${instance_socks_port} 
-				After=network.target
-
-				[Service]
-				Type=simple
-				Restart=always
-				ExecStart=/usr/local/bin/clash -d ${instance_config_dir}
-
-				[Install]
-				WantedBy=multi-user.target
-			EOF
-			sudo systemctl daemon-reload
-			sudo systemctl enable ${instance_service_name}
-			sudo systemctl start ${instance_service_name}
-			sleep 3
-			red "日志信息：$instance_service_name"
-			sudo journalctl -n 20 -u ${instance_service_name}
-		done
-
-	fi
-
-	red "确认监听地址和端口"
-	sudo ss -ntl | grep --color=auto -P "78\d{2}|79\d{2}|90\d{2}|91\d{2}"
-
+	red "确认clash监听地址和端口"
+	sudo ss -ntl | grep --color=auto -P "78\d{2}|90\d{2}"
+	sleep 2
 }
 
 function install_subconverter() {
@@ -1098,10 +1042,8 @@ function start_menu() {
 	red "============================"
 	green "下面是工具箱提供的一些功能:"
 	echo "1. 安全加固"
-	echo "2. 安装github命令行"
-	echo "3. 通过gh登陆github"
-	echo "4. 克隆或者更新客户端仓库"
-	echo "5. 安装client服务"
+	echo "2. 克隆或者更新客户端仓库"
+	echo "3. 安装client服务"
 	echo "6. 安装Brook socks5服务"
 	echo "7. 安装nginx"
 	echo "8. 安装certbot"
@@ -1109,7 +1051,6 @@ function start_menu() {
 	echo "10. 安装rclone客户端"
 	echo "11. 配置备份任务 "
 	echo "12. 克隆或更新admin仓库 "
-	echo "13. 安装redis "
 	echo "14. 安装mysql "
 	echo "15. 安装admin服务 "
 	echo "16. 禁止ipv6 "
@@ -1128,15 +1069,9 @@ function start_menu() {
 		security_enhance
 		;;
 	"2")
-		install_github_cli
-		;;
-	"3")
-		gh_login
-		;;
-	"4")
 		clone_client_repo
 		;;
-	"5")
+	"3")
 		install_client_service
 		;;
 	"6")
@@ -1160,9 +1095,6 @@ function start_menu() {
 	"12")
 		clone_admin_repo
 		;;
-	"13")
-		install_redis
-		;;
 	"14")
 		install_mysql
 		;;
@@ -1183,9 +1115,6 @@ function start_menu() {
 		;;
 	"20")
 		install_v2ray
-		;;
-	"21")
-		install_clash
 		;;
 	"22")
 		install_subconverter
