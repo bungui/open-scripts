@@ -97,6 +97,7 @@ function download_script_repo_file() {
 }
 
 function check_redis() {
+	red "检查redis是否安装"
 	if [ -f /usr/bin/redis-cli ]; then
 		red "redis已安装"
 	else
@@ -106,6 +107,7 @@ function check_redis() {
 	fi
 	red "当前redis端口情况： "
 	ss -ntl | grep --color=auto 6379
+	red "检查redis完毕"
 	sleep 2
 }
 
@@ -123,6 +125,7 @@ function get_latest_client_script() {
 
 function check_gh_status() {
 	# 参考： https://github.com/cli/cli/blob/trunk/docs/install_linux.md
+	red "检查gh是否安装"
 	if ! type gh >/dev/null 2>&1; then
 		yellow "gh未安装，安装中"
 		curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
@@ -134,12 +137,15 @@ function check_gh_status() {
 		sudo apt update
 		sudo apt install gh -y
 	fi
+	red "检查是否登录github"
 	if ! gh auth status >/dev/null 2>&1; then
 		echo "未登陆github"
 		gh auth login
 	else
-		echo "已经登陆"
+		echo "已经登陆github"
 	fi
+	red "检查gh完毕"
+	sleep 2
 }
 
 function check_virtualenv() {
@@ -897,6 +903,7 @@ function install_v2ray() {
 
 function check_clash() {
 	# official: https://github.com/Dreamacro/clash
+	red "检查是否安装clash"
 	download_url="https://github.com/Dreamacro/clash/releases/download/v1.8.0/clash-linux-amd64-v1.8.0.gz"
 	clash_bin="/usr/local/bin/clash"
 	clash_service="/usr/lib/systemd/system/clash.service"
@@ -915,8 +922,9 @@ function check_clash() {
 	fi
 	sudo mkdir -p "$clash_config_dir"
 	# 下载mmdb数据库
+	red "检查mmdb文件"
 	if [ -f "$clash_mmdb" ]; then
-		read -p "是否覆盖[y/N]: " confirm
+		read -p "mmdb已存在，是否覆盖[y/N]: " confirm
 		if [ "$confirm" = "Y" ] || [ "$confirm" = "y" ]; then
 			sudo wget "$country_mmdb_url" -O "$clash_mmdb"
 		fi
@@ -924,8 +932,7 @@ function check_clash() {
 		sudo wget "$country_mmdb_url" -O "$clash_mmdb"
 	fi
 	if [ ! -f "$clash_config" ]; then
-		red "生成默认的配置文件"
-
+		red "生成配置文件：$clash_config"
 		# 这里未使用dns，因为dns端口如果相同会有冲突
 		# journal日志可以忽略：Start DNS server error: missing port in address
 		sudo cat >"$clash_config" <<-EOF
@@ -938,6 +945,7 @@ function check_clash() {
 	fi
 
 	if [ ! -f "$clash_service" ]; then
+		red "生成clash服务文件：$clash_service"
 		sudo cat >"$clash_service" <<-EOF
 			[Unit]
 			Description=Clash daemon, A rule-based proxy in Go.
@@ -959,6 +967,7 @@ function check_clash() {
 
 	red "确认clash监听地址和端口"
 	sudo ss -ntl | grep --color=auto -P "78\d{2}|90\d{2}"
+	red "检查clash完毕"
 	sleep 2
 }
 
