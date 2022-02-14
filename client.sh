@@ -155,6 +155,7 @@ function check_virtualenv() {
 		return 1
 	fi
 
+	red "开始检查虚拟环境是否安装"
 	if ! dpkg -s python3-virtualenv >/dev/null 2>&1; then
 		red "未安装python3-virtualenv"
 		sudo apt update
@@ -170,6 +171,8 @@ function check_virtualenv() {
 	if [ -f requirements.txt ]; then
 		pip install -r requirements.txt
 	fi
+	red "检查依赖包完毕"
+	sleep 2
 }
 
 function clone_client_repo() {
@@ -184,14 +187,13 @@ function clone_client_repo() {
 		rm __pycache__/ -rf >/dev/null 2>&1
 		red "开始更新代码"
 		git pull
-		check_virtualenv
 	else
 		cd /repo
 		red "开始克隆代码到目录： $repo_dir"
 		gh repo clone brilon/py-aiohttp-client
 		cd py-aiohttp-client
-		check_virtualenv
 	fi
+	check_virtualenv
 
 }
 
