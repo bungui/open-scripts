@@ -1048,6 +1048,19 @@ function install_docker() {
 	sudo docker run --rm appropriate/curl -ksI https://www.githubstatus.com/
 }
 
+function install_php8() {
+	if [ ! -f /usr/bin/php ]; then
+		red "未安装php8.0"
+		sudo apt update && sudo apt install software-properties-common -y
+		sudo add-apt-repository ppa:ondrej/php
+		sudo apt install php8.0 -y
+		sudo apt install php8.0-gd php8.0-xml php8.0-soap php8.0-mbstring php8.0-mysql
+	else
+		red "已安装php8.0"
+	fi
+	php --version
+}
+
 function start_menu() {
 	clear
 	red "============================"
@@ -1075,6 +1088,7 @@ function start_menu() {
 	echo "20. 安装v2ray "
 	echo "22. 安装subconverter "
 	echo "23. 安装docker "
+	echo "24. 安装php8 "
 	echo "v. 更新脚本"
 	echo "0. 退出脚本CTRL+C"
 	read -p "请输入选项:" menuNumberInput
@@ -1132,6 +1146,9 @@ function start_menu() {
 		;;
 	"23")
 		install_docker
+		;;
+	"24")
+		install_php8
 		;;
 	"v")
 		get_latest_client_script
