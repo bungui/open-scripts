@@ -1070,10 +1070,8 @@ function start_menu() {
 	echo "15. 安装admin服务 "
 	echo "16. 禁止ipv6 "
 	echo "17. 修改主机名 "
-	echo "18. 安装多个tor实例"
 	echo "19. 配置ssh使用公钥登陆 "
 	echo "20. 安装v2ray "
-	echo "21. 安装clash "
 	echo "22. 安装subconverter "
 	echo "23. 安装docker "
 	echo "v. 更新脚本"
@@ -1121,9 +1119,6 @@ function start_menu() {
 		;;
 	"17")
 		change_hostname
-		;;
-	"18")
-		install_multiple_tor
 		;;
 	"19")
 		add_ssh_config
