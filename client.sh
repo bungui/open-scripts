@@ -1041,6 +1041,7 @@ function install_docker() {
 	else
 		red "已经安装docker compose"
 	fi
+	chmod +x /usr/local/bin/docker-compose
 	red "测试docker hello world"
 	sudo docker run hello-world
 	red "测试docker curl"
