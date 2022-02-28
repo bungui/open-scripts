@@ -25,20 +25,10 @@ yellow() {
 	echo -e "\033[33m\033[01m$1\033[0m"
 }
 
-if [[ -f /etc/redhat-release ]]; then
-	release="Centos"
-elif cat /etc/issue | grep -q -E -i "debian"; then
-	release="Debian"
-elif cat /etc/issue | grep -q -E -i "ubuntu"; then
+if cat /etc/issue | grep -q -E -i "ubuntu"; then
 	release="Ubuntu"
-elif cat /etc/issue | grep -q -E -i "centos|red hat|redhat"; then
-	release="Centos"
-elif cat /proc/version | grep -q -E -i "debian"; then
-	release="Debian"
 elif cat /proc/version | grep -q -E -i "ubuntu"; then
 	release="Ubuntu"
-elif cat /proc/version | grep -q -E -i "centos|red hat|redhat"; then
-	release="Centos"
 else
 	red "不支持你当前系统，请使用Ubuntu、Debian、Centos的主流系统"
 	exit 1
@@ -46,35 +36,22 @@ fi
 
 if ! type curl >/dev/null 2>&1; then
 	yellow "curl未安装，安装中"
-	if [ $release = "Centos" ]; then
-		yum -y update && yum install curl -y
-	else
-		apt-get update -y && apt-get install curl -y
-	fi
-else
-	green "curl已安装"
+	sudo apt-get update -y && apt-get install curl -y
 fi
 
 if ! type wget >/dev/null 2>&1; then
 	yellow "wget未安装，安装中"
-	if [ $release = "Centos" ]; then
-		yum -y update && yum install wget -y
-	else
-		apt-get update -y && apt-get install wget -y
-	fi
-else
-	green "wget已安装"
+	sudo apt-get update -y && apt-get install wget -y
 fi
 
 if ! type sudo >/dev/null 2>&1; then
 	yellow "sudo未安装，安装中"
-	if [ $release = "Centos" ]; then
-		yum -y update && yum install sudo -y
-	else
-		apt-get update -y && apt-get install sudo -y
-	fi
-else
-	green "sudo已安装"
+	sudo apt-get update -y && apt-get install sudo -y
+fi
+
+if ! type unzip >/dev/null 2>&1; then
+	yellow "unzip未安装，安装中"
+	sudo apt-get update -y && apt-get install unzip -y
 fi
 
 # 获取最新的文件，比如：download_script_repo_file "example/backup.sh" "/repo/example/backup.sh"
@@ -1028,6 +1005,7 @@ function install_docker() {
 		red "开始安装docker"
 		sudo apt-get update
 		sudo apt-get install ca-certificates curl gnupg lsb-release -y
+		curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 		echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
 		       $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
 		sudo apt update
@@ -1054,7 +1032,10 @@ function install_php8() {
 		sudo apt update && sudo apt install software-properties-common -y
 		sudo add-apt-repository ppa:ondrej/php
 		sudo apt install php8.0 -y
-		sudo apt install php8.0-gd php8.0-xml php8.0-soap php8.0-mbstring php8.0-mysql
+		# sudo apt search php8.0-*
+		sudo apt install php8.0-gd php8.0-xml php8.0-soap php8.0-mbstring php8.0-mysql php8.0-imagick php8.0-intl php8.0-bcmath php8.0-sqlite3 php8.0-zip php8.0-curl -y
+		sudo wget -O /tmp/composer-setup.php https://getcomposer.org/installer
+		sudo php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer
 	else
 		red "已安装php8.0"
 	fi
